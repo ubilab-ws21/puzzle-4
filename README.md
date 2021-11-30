@@ -12,7 +12,8 @@ The Hardware folder contains most of the manuals and guides for the used hardwar
 
 ## How the puzzle works<a name="1"></a>
 ![warning signs]<img src="https://github.com/ubilab-ws21/puzzle-4/blob/main/Sequences/warning-signs.svg" width="400" height="790">
-https://github.com/ubilab-ws21/puzzle-4/blob/main/Sequences/warning-signs.svg
+<img src="https://github.com/ubilab-ws21/puzzle-4/blob/main/Sequences/demo-sign.png">
+![demo sequence]<img src="https://github.com/ubilab-ws21/puzzle-4/blob/main/Sequences/demo-sequence.PNG" width="400" height="790">
 
 ## Puzzle in Storyline <a name="2"></a>
 
