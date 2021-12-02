@@ -1,3 +1,8 @@
+/*
+ * Waits for start MQTT message and receives current number which shoule be dispalyed.
+ * Shows the current number on TM1637 7-segment-display when arcade button gets pushed.
+ */
+
 #include <WiFi.h>
 #include <ESPmDNS.h>
 #include <ArduinoOTA.h>
