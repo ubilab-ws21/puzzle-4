@@ -23,8 +23,10 @@ The Hardware folder contains most of the manuals and guides for the used hardwar
 - [x] Programming and testing OTA and MQTT with ESP32
 - [x] Preparing warning signs and creating coutout sequences
 - [x] First rough test run in the Escape room
-- [] ...
-- [] Last testing and bug fixing
-- [] Final run and presentation
+- [x] Assembly of hardware for the under pictures buttons & 7-segment-displays
+- [x] First software prototype for controlling the 7-segment-displays with arcade buttons
+- [ ] ...
+- [ ] Last testing and bug fixing
+- [ ] Final run and presentation
 
 ## Hardware <a name="4"></a>
