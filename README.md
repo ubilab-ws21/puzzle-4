@@ -28,10 +28,14 @@ When seeing this on the server display the players should recognize this picture
 <img src="https://github.com/ubilab-ws21/puzzle-4/blob/main/Sequences/warning-signs.svg">
 We placed them in pairs of two pictures at different walls in different rooms so the players have to use the whole space. Additionally we force the group to communicate with each other and benefit teamwork.
 Under each picture will be a seven segment display and a button. The display only shows a number when the related button is pressed. To stop one person to stand in the middle of the room and look at the numbers under each picture.
+XXHier Foto von fertigem AufbauXXX
 <img src="https://github.com/ubilab-ws21/puzzle-4/blob/main/Sequences/demo-sign.png">
 
 By finding the four pictures and the resulting four numbers and putting them in the equations the group should get a four digit code which they need to type in the server with a given numpad.
-
+Overall does every picture pair consists of one ESP32, two buttons and four seven segment displays. The server consists of the numpad, Raspberry Pi and a display. All the ESP32 and the Raspberry Pi communicate via MQTT.
+At the beginning all the devices are waiting for the start message. When receiving this message the Raspi will start with the first sequence and the ESP32 will power the buttons so they will light up and show the corresponding first number on the seven segment display when pressed. 
+After some time has passed and the puzzle is not solved the Raspberry Pi sends a MQTT message at the enviroment group to play a text to speech: "new sequence". So the players know that sequence has changed. Also the ESP32 receive a MQTT message from the Raspi that they need to change the numbers. 
+Therefore all numbers are saved in an array. 
 
 
 ## Project Timeline <a name="3"></a>
