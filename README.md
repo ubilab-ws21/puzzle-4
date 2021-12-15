@@ -42,7 +42,7 @@ Therefore all numbers are saved in an array.
 - [x] Concept finding for puzzle
 - [x] Creating a BOM
 - [x] Programming and testing OTA and MQTT with ESP32
-- [x] Preparing warning signs and creating coutout sequences
+- [x] Preparing warning signs and creating cutout sequences
 - [x] First rough test run in the Escape room
 - [x] Assembly of hardware for the under pictures buttons & 7-segment-displays
 - [x] First software prototype for controlling the 7-segment-displays with arcade buttons
