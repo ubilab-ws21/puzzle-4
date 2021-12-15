@@ -18,12 +18,15 @@
 
 #define SERIALSPEED 115200
 
+// use WiFi and MQTT
+#define networkCapabilities
+
 // Wifi Credentials
-#define SSID "huhu"
-#define PWD "haha"
+#define SSID "V"
+#define PWD "P"
 
 //MQTT Credentials
-#define MQTT_SERVER_IP "192.168.178.30" //192.168.0.101
+#define MQTT_SERVER_IP "192.168.0.101" //192.168.178.30
 #define MQTT_PORT 1883
 #define MAX_MSG 50
 char msg[MAX_MSG] = {'\0'};
@@ -57,54 +60,58 @@ bool segmentState[] = {0, 0};
 
 void setup() {
   Serial.begin(SERIALSPEED);
-  WiFi.begin(SSID,PWD);
 
-  Serial.print("Connecting to ");
-  Serial.println(SSID);
-
-  WiFi.setHostname(NAME);
+  #ifdef networkCapabilities
+    WiFi.begin(SSID,PWD);
+    Serial.print("Connecting to ");
+    Serial.println(SSID);
   
-  // wait for connecting
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500); Serial.print(".");
-  } 
-  // Print IP
-  Serial.println("\nWiFi connected.\nIP Adress: ");
-  Serial.println(WiFi.localIP());
+    WiFi.setHostname(NAME);
+    
+    // wait for connecting
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(500); Serial.print(".");
+    } 
+    // Print IP
+    Serial.println("\nWiFi connected.\nIP Adress: ");
+    Serial.println(WiFi.localIP());
+  
+    // Setting up mDNS
+    if (!MDNS.begin(NAME)) { 
+      Serial.println("Error setting up MDNS responder!");
+    }
+    MDNS.addService("_escape", "_tcp", 2000);
+  
+    mqtt.setServer(MQTT_SERVER_IP, MQTT_PORT);
+    // MQTT connect
+    if (mqtt.connect(NAME)) {
+      Serial.println("Connected to MQTT server");
+    } else {
+      Serial.println("Cannot connect to MQTT server");
+    }
+    mqtt.setCallback(mqttCallback);
+  
+    mqtt.subscribe("puzzle4/esp/1/left/sequence");
+    mqtt.subscribe("puzzle4/esp/1/right/sequence");
+    mqtt.subscribe("puzzle4/esp/state");
+  
+    // Arduino OTA
+    ArduinoOTA.setHostname(NAME);
+    ArduinoOTA.setPassword(OTA_PWD);
+    ArduinoOTA.onStart([]() {
+    Serial.println("Start updating");
+    });
+    ArduinoOTA.onEnd([]() {
+    Serial.println("Finished updating");
+    });
+    ArduinoOTA.onError([](ota_error_t error) {
+    Serial.println("Error updating");
+    ESP.restart();
+    });
+    ArduinoOTA.begin();
+  #endif
 
-  // Setting up mDNS
-  if (!MDNS.begin(NAME)) { 
-    Serial.println("Error setting up MDNS responder!");
-  }
-  MDNS.addService("_escape", "_tcp", 2000);
 
-  mqtt.setServer(MQTT_SERVER_IP, MQTT_PORT);
-  // MQTT connect
-  if (mqtt.connect(NAME)) {
-    Serial.println("Connected to MQTT server");
-  } else {
-    Serial.println("Cannot connect to MQTT server");
-  }
-  mqtt.setCallback(mqttCallback);
-
-  mqtt.subscribe("puzzle4/esp/1/left/sequence");
-  mqtt.subscribe("puzzle4/esp/1/right/sequence");
-  mqtt.subscribe("puzzle4/esp/state");
-
-  // Arduino OTA
-  ArduinoOTA.setHostname(NAME);
-  ArduinoOTA.setPassword(OTA_PWD);
-  ArduinoOTA.onStart([]() {
-  Serial.println("Start updating");
-  });
-  ArduinoOTA.onEnd([]() {
-  Serial.println("Finished updating");
-  });
-  ArduinoOTA.onError([](ota_error_t error) {
-  Serial.println("Error updating");
-  ESP.restart();
-  });
-  ArduinoOTA.begin();
 
   // 7-segment display setup
   tm1637.init();
@@ -116,18 +123,25 @@ void setup() {
   pinMode(BUTTON_1, INPUT_PULLUP);
   pinMode(BUTTON_2, INPUT_PULLUP);
 
+  #ifndef networkCapabilities
+    setLED(true);
+  #endif
+
 }
 
 void loop() {
-  ArduinoOTA.handle();
 
-  mqtt.loop();
+  #ifdef networkCapabilities
+    ArduinoOTA.handle();
   
-  while(!mqttStart){
-    Serial.println("Waiting for start signal over MQTT");
     mqtt.loop();
-    delay(1000);
-  }
+    
+    while(!mqttStart){
+      Serial.println("Waiting for start signal over MQTT");
+      mqtt.loop();
+      delay(1000);
+    }
+  #endif
 
   //handle Button 1
   if(digitalRead(BUTTON_1) == 0) {
