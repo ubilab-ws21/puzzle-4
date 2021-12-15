@@ -10,7 +10,7 @@ def on_connect(client, userdata, flags, rc):
         print("Connected successfully!")
 
 def on_message(client, userdata, msg): #function is automatically activated when message is received
-    if (msg.topic == "puzzle4/raspberry"): #topic for listing all devices
+    if (msg.topic == "puzzle4/raspberry"):
         print("Received start message")
 
 def init_mqtt(): #Connect to MQTT-Server
@@ -37,4 +37,3 @@ if __name__ == "__main__":
         i = i + 1
         if (i==10):
             i=0
-
