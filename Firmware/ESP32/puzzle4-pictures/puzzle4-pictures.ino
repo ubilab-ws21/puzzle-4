@@ -19,7 +19,7 @@
 #define SERIALSPEED 115200
 
 // use WiFi and MQTT
-#define networkCapabilities
+//#define networkCapabilities
 
 // Wifi Credentials
 #define SSID "V"
@@ -46,8 +46,8 @@ TM1637 tm1637(CLK,DIO);
 #define BUTTON_2 5
 
 bool mqttStart = false;
-int leftSequenceIndex = 0;
-int rightSequenceIndex = 0;
+int leftSequenceIndex = 3;
+int rightSequenceIndex = 4;
 
 int leftSequence[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 int rightSequence[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
