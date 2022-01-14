@@ -1,25 +1,41 @@
+#needed for GUI
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
+from gi.repository import Gtk, GLib
 
+#needed to run the GUI and the program logic (MQTT, changing pictures) simultaneously
+import threading
 import time
 
+updatePictures = False
 insertedCode = 0
+picture = 0
+sequence = 0
+
+def runGUI():
+    gui_ready.set()
+    win = MyWindow()
+    win.connect("destroy", Gtk.main_quit)
+    win.show_all()
+    win.set_default_size(800, 480)
+    Gtk.main()
+
+
 
 class MyWindow(Gtk.Window):
     def __init__(self):
         super().__init__(title="Sequence")
 
-        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.add(vbox)
 
         #show sequence
         self.image = Gtk.Image()
-        self.image.set_from_file("pictures/Schneeflocke.png")
-        #self.image.set_size_request(60,60)
+        self.image.set_from_file("sequences/1_1.jpg")
+        self.image.set_size_request(60,60)
         vbox.pack_start(self.image, True, True, 0)
 
-        hbox = Gtk.Box(spacing=6)
+        hbox = Gtk.Box(spacing=5)
         vbox.pack_start(hbox, True, True, 0)
 
         #code entry
@@ -33,21 +49,56 @@ class MyWindow(Gtk.Window):
         self.button.connect("clicked", self.on_button_clicked)
         hbox.pack_end(self.button, True, True, 0)
 
+        updatePictures_thread = threading.Thread(target=self.check_change_picture)
+        updatePictures_thread.daemon = True
+        updatePictures_thread.start()
+
     #read inserted code on button press
     def on_button_clicked(self, widget):
-        self.image.set_from_file("pictures/Blitz.png")
         insertedCode = self.entry.get_text()
         print(insertedCode)
 
+    def change_picture(self): 
+        global picture
+        if picture%4 == 0:
+            self.image.set_from_file("sequences/1_2.jpg")
+        elif picture%4 == 1:
+            self.image.set_from_file("sequences/1_3.jpg")
+        elif picture%4 == 2:
+            self.image.set_from_file("sequences/1_4.jpg")
+        elif picture%4 == 3:
+            self.image.set_from_file("sequences/Reset.jpg")
+        picture = picture + 1
 
-win = MyWindow()
-win.connect("destroy", Gtk.main_quit)
-win.show_all()
-win.fullscreen()
-Gtk.main()
 
-time.sleep(5)
+    
+    def check_change_picture(self):
+        global updatePictures
+        while(True):
+            if(updatePictures == True):
+                GLib.idle_add(self.change_picture)
+                updatePictures = False
+                
 
-win.vbox.pack_start(win.image, True, True, 0)
-win.show_all()
-Gtk.main()
+
+#initalization
+gui_ready = threading.Event()
+gui_thread = threading.Thread(target=runGUI)
+gui_thread.start()
+gui_ready.wait()
+
+while(True):
+    time.sleep(2)
+    updatePictures = True
+
+
+
+
+
+
+
+
+
+
+
+
