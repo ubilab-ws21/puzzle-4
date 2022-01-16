@@ -23,8 +23,8 @@
 #define networkCapabilities
 
 // Wifi Credentials
-#define SSID "Vodafone-24G"
-#define PWD "Platine18"
+#define SSID "no"
+#define PWD "no"
 
 //MQTT Credentials
 #define MQTT_SERVER_IP "192.168.0.101" //192.168.178.30
