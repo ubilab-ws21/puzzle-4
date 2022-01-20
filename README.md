@@ -24,10 +24,10 @@ Accordingly the Escape Room is solved.
   
 
 ## How the puzzle works<a name="2"></a>
-The puzzle starts by showing a video sequence of picture cutouts included in a mathematical equation. The players need to find the corresponding picture from the cutout and take the number below into the equation to get one digit of the solution. There is a total of four equations with cutouts and therefore consists the solution of four digits.
+The puzzle starts by showing a video sequence of picture cutouts included in a mathematical equation. Simultanously there starts a text-to-speach which says that the server is locked and a password needs to be entered. The players need to find the corresponding picture from the cutout and take the number below into the equation to get one digit of the solution. There is a total of four equations with cutouts and therefore consists the solution of four digits.
 After showing the four equations the sequence restarts as long as a predefined time. Afterwards there will be a completely new sequence with other cutouts in other mathematical equations. Such a equation with a given cutout can be seen in the following picture:
 <img src="https://github.com/ubilab-ws21/puzzle-4/blob/main/Sequences/demo-sequence.PNG">
-When seeing this on the server display the players should recognize this picture cutout from the rooms they played in before. Because in the entry room and the lab room are many warning signs at the walls. An overview of all the warning signs can be seen in the next picture:
+When seeing this on the server display the players should recognize this picture cutout from the rooms they played in before. Because in the entrance room and the lab room are many warning signs at the walls. An overview of all the warning signs can be seen in the next picture:
 <img src="https://github.com/ubilab-ws21/puzzle-4/blob/main/Sequences/warning-signs.svg">
 We placed them in pairs of two pictures at different walls in different rooms so the players have to use the whole space. Additionally we force the group to communicate with each other and benefit teamwork.
 Under each picture will be a seven segment display and a button. The display only shows a number when the related button is pressed. To stop one person to stand in the middle of the room and look at the numbers under each picture.
@@ -35,9 +35,9 @@ XXHier Foto von fertigem AufbauXXX
 <img src="https://github.com/ubilab-ws21/puzzle-4/blob/main/Sequences/demo-sign.png">
 
 By finding the four pictures and the resulting four numbers and putting them in the equations the group should get a four digit code which they need to type in the server with a given numpad.
-Overall does every picture pair consists of one ESP32, two buttons and four seven segment displays. The server consists of the numpad, Raspberry Pi and a display. All the ESP32 and the Raspberry Pi communicate via MQTT.
-At the beginning all the devices are waiting for the start message. When receiving this message the Raspi will start with the first sequence and the ESP32 will power the buttons so they will light up and show the corresponding first number on the seven segment display when pressed. 
-After some time has passed and the puzzle is not solved the Raspberry Pi sends a MQTT message at the enviroment group to play a text to speech: "new sequence". So the players know that sequence has changed. Also the ESP32 receive a MQTT message from the Raspi that they need to change the numbers. 
+Overall does every picture pair consists of one ESP32, two buttons and four seven segment displays. The server consists of the numpad, Raspberry Pi and a display. Additionally there is an ESP32 with a seven-segment-display which represents the timer. All the ESP32 and the Raspberry Pi communicate via MQTT.
+At the beginning all the dRaspberry Pi is waiting for the start message. When receiving this message the Raspi will send the starting sequence to the ESPs and starts with the first sequence. The ESP32 will power the buttons so they will light up and show the corresponding first number on the seven segment display when pressed. 
+After some time has passed and the puzzle is not solved or the players enter a wrong code the Raspberry Pi sends a MQTT message at the enviroment group to play a text to speech: "new sequence". So the players know that sequence has changed. Also the ESP32 receive a MQTT message from the Raspi that they need to change the numbers, a new sequence is shown on the display and the timer restarts. 
 Therefore all numbers are saved in an array. 
 
 The following flow chart shows the overall course of events of our puzzle.
