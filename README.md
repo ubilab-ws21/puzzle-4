@@ -46,7 +46,19 @@ Therefore all numbers are saved in an array.
 - [x] First rough test run in the Escape room
 - [x] Assembly of hardware for the under pictures buttons & 7-segment-displays
 - [x] First software prototype for controlling the 7-segment-displays with arcade buttons
+- [x] Soldering all parts together
+- [x] Designing a 3D case in SolidWorks
+- [x] Assembly of electronic with first case
+- [x] Creating the GUI and Software for the Raspberry
+- [x] Edit the 3D case and print the missing parts
+- [x] Conception and creation of the timer 
+- [x] Testing the network communication between the systems in the escape room
+- [x] Assembly of the missing parts
+- [x] Designing the final sequences for the riddle
 - [ ] ...
+- [ ] Printing and foil-coating the pictures
+- [ ] Mount all parts in the room
+- [ ] Provide power supply for all of them
 - [ ] Last testing and bug fixing
 - [ ] Final run and presentation
 
