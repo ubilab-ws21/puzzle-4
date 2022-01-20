@@ -39,6 +39,8 @@ Overall does every picture pair consists of one ESP32, two buttons and four seve
 At the beginning all the devices are waiting for the start message. When receiving this message the Raspi will start with the first sequence and the ESP32 will power the buttons so they will light up and show the corresponding first number on the seven segment display when pressed. 
 After some time has passed and the puzzle is not solved the Raspberry Pi sends a MQTT message at the enviroment group to play a text to speech: "new sequence". So the players know that sequence has changed. Also the ESP32 receive a MQTT message from the Raspi that they need to change the numbers. 
 Therefore all numbers are saved in an array. 
+
+The following flow chart shows the overall course of events of our puzzle.
 <img src="https://github.com/ubilab-ws21/puzzle-4/blob/main/Sequences/puzzle-ablaufplan.png">
 
 ## MQTT Documentation <a name="3"></a>
