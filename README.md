@@ -4,10 +4,13 @@ The Firmware folder contains all the Software code used for this project.
 In the Sequences folder are the created sequences as .mp4 and .pdf and also a solution file.
 The Hardware folder contains most of the manuals and guides for the used hardware parts in our riddle for example the pin-assignment for the ESP32.
 
-## Content#* [Puzzle in Storyline](#1)
+## Content#
+* [Puzzle in Storyline](#1)
 * [How the puzzle works](#2)
-* [Project Timeline](#3)
-* [Hardware](#4)
+* [Hardware](#3)
+* [MQTT Documentation](#4)
+* [Project Timeline](#5)
+
 
 ## Puzzle in Storyline <a name="1"></a>
 The players face a horrible situation because a solar storm happens while they visit a power supplier. This results in shutting down all electricity which is very dangerous because we are in the year 2050 and the blind trust in the technology is so big that this shutdown could be an apocalyptic scenario.
@@ -38,7 +41,13 @@ After some time has passed and the puzzle is not solved the Raspberry Pi sends a
 Therefore all numbers are saved in an array. 
 
 
-## Project Timeline <a name="3"></a>
+## MQTT Documentation <a name="3"></a>
+
+
+## Hardware <a name="4"></a>
+
+
+## Project Timeline <a name="5"></a>
 - [x] Concept finding for puzzle
 - [x] Creating a BOM
 - [x] Programming and testing OTA and MQTT with ESP32
@@ -62,4 +71,3 @@ Therefore all numbers are saved in an array.
 - [ ] Last testing and bug fixing
 - [ ] Final run and presentation
 
-## Hardware <a name="4"></a>
