@@ -44,9 +44,13 @@ The following flow chart shows the overall course of events of our puzzle.
 <img src="https://github.com/ubilab-ws21/puzzle-4/blob/main/Sequences/puzzle-ablaufplan.png">
 
 ## MQTT Documentation <a name="3"></a>
-
+Erklärung dass nur der Raspi mit außen kommuniziert und der Rest intern bleibt.
+XXDiagramm mit den verschiedenen topics für die verschiedenen ObjekteXX
+Erklärung wofür welches Topic und was für Nachrichten in diesem.
 
 ## Hardware <a name="4"></a>
+All documents and manuals needed to reconstruct this puzzle are in the "Hardware" folder.
+XXFoto von zusammengelötetem Aufbau mit offener caseXX
 
 
 ## Project Timeline <a name="5"></a>
