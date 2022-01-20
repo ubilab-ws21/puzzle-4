@@ -5,9 +5,8 @@
 
 /*
  * MQTT topics:
- * puzzle4/esp/state [start, stop] - control the state of all ESPs 
- * puzzle4/esp/1/left/sequence [1-9] - control the number of the left picture of the 1st ESP
- * puzzle4/esp/1/right/sequence [1-9] - control the number of the right picture of the 1st ESP
+ * puzzle4/esp [start, stop] - control the state of all ESPs 
+ * puzzle4/esp/sequence [int] - indicates wihch sequence is currently activated
  */
 
 #include <WiFi.h>
@@ -19,14 +18,14 @@
 #define SERIALSPEED 115200
 
 // use WiFi and MQTT
-//#define networkCapabilities
+#define networkCapabilities
 
 // Wifi Credentials
-#define SSID "V"
-#define PWD "P"
+#define SSID "ubilab_wifi"
+#define PWD "ohg4xah3oufohreiPe7e"
 
 //MQTT Credentials
-#define MQTT_SERVER_IP "192.168.0.101" //192.168.178.30
+#define MQTT_SERVER_IP "10.8.166.20"
 #define MQTT_PORT 1883
 #define MAX_MSG 50
 char msg[MAX_MSG] = {'\0'};
@@ -46,11 +45,19 @@ TM1637 tm1637(CLK,DIO);
 #define BUTTON_2 5
 
 bool mqttStart = false;
-int leftSequenceIndex = 3;
-int rightSequenceIndex = 4;
+int sequenceIndex = 3;
+int esp = 0;
 
-int leftSequence[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-int rightSequence[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+int sequence[4][4][2] = {{{9, 3}, {4, 7}, {2, 1}, {6, 8}},
+                  {{3, 1}, {2, 9}, {3, 5}, {2, 7}},
+                  {{2, 6}, {4, 3}, {7, 4}, {1, 2}},
+                  {{6, 1}, {5, 9}, {2, 4}, {3, 7}};
+                  {{1, 3}, {8, 8}, {5, 9}, {6, 2}};
+                  {{5, 1}, {2, 7}, {1, 4}, {8, 9}};
+                  {{3, 4}, {6, 2}, {1, 8}, {9, 3}};
+                  {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
+                  {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
+                  {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}}};
 
 WiFiClient mqttClient;
 PubSubClient mqtt(mqttClient);
@@ -91,9 +98,8 @@ void setup() {
     }
     mqtt.setCallback(mqttCallback);
   
-    mqtt.subscribe("puzzle4/esp/1/left/sequence");
-    mqtt.subscribe("puzzle4/esp/1/right/sequence");
-    mqtt.subscribe("puzzle4/esp/state");
+    mqtt.subscribe("puzzle4/esp");
+    mqtt.subscribe("puzzle4/esp/sequence");
   
     // Arduino OTA
     ArduinoOTA.setHostname(NAME);
@@ -145,25 +151,31 @@ void loop() {
 
   //handle Button 1
   if(digitalRead(BUTTON_1) == 0) {
-    tm1637.display(0, leftSequence[leftSequenceIndex]);
+    //left
+    //Serial.println(sequence[esp][sequenceIndex][0]);
+    Serial.println(sequenceIndex);
+    tm1637.display(0, sequence[esp][sequenceIndex][0]);
     segmentState[0] = 1;
   } else if (segmentState[0] == 1) {
     segmentState[0] = 0;
     tm1637.clearDisplay();
     if (segmentState[1] == 1) {
-      tm1637.display(3, rightSequence[rightSequenceIndex]);
+      //right
+      tm1637.display(3, sequence[esp][sequenceIndex][1]);
     }
   }
 
   //handle Button 2
   if(digitalRead(BUTTON_2) == 0) {
-    tm1637.display(3, rightSequence[rightSequenceIndex]);
+    //right
+    tm1637.display(3, sequence[esp][sequenceIndex][1]);
     segmentState[1] = 1;
   } else if (segmentState[1] == 1) {
     segmentState[1] = 0;
     tm1637.clearDisplay();
     if (segmentState[0] == 1) {
-      tm1637.display(0, leftSequence[leftSequenceIndex]);
+      //left
+      tm1637.display(0, sequence[esp][sequenceIndex][0]);
     }
   }
 
@@ -186,22 +198,20 @@ void mqttCallback(char* topic, byte* message, unsigned int length) {
 
 void analyzeMQTTMessage(char* topic, char* msg) {
   // check for start-message
-  if(strcmp(topic, "puzzle4/esp/state") == 0 and strcmp(msg, "start") == 0) {
+  if(strcmp(topic, "puzzle4/esp") == 0 and strcmp(msg, "start") == 0) {
     setLED(true);
     mqttStart = true;
   }
 
   // check for end-message
-  if(strcmp(topic, "puzzle4/esp/state") == 0 and strcmp(msg, "stop") == 0) {
+  if(strcmp(topic, "puzzle4/esp") == 0 and strcmp(msg, "stop") == 0) {
     setLED(false);
     mqttStart = false;
   }
 
   //analyze mqtt with a message cointaining a number change
-  if (strcmp(topic, "puzzle4/esp/1/left/sequence") == 0){
-    sscanf(msg, "%d", &leftSequenceIndex);
-  } else if (strcmp(topic, "puzzle4/esp/1/right/sequence") == 0) {
-    sscanf(msg, "%d", &rightSequenceIndex);
+  if (strcmp(topic, "puzzle4/esp/sequence") == 0){
+    sscanf(msg, "%d", &sequenceIndex);
   }
 }
 
