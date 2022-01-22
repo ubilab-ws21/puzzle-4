@@ -12,18 +12,21 @@ from gi.repository import Gtk, GLib
 import threading
 import time
 import random
+import sys
+import os
+import signal
 
 #variables
-startProcedure = False
-codes = [1234, 2341, 3412, 4123]
+codes = [7548, 7548, 7548, 7548]
 players = 3
 updatePictures = False
 insertedCode = 0
-picture = 0
+picture = -1
 sequence = 0
 stopTimer = False
 codeCorrect = False
 codeWrong = False
+startup = True
 
 #MQTT functions
 def on_connect(client, userdata, flags, rc):
@@ -33,19 +36,17 @@ def on_connect(client, userdata, flags, rc):
 
 #checks for MQTT messages
 def on_message(client, userdata, msg): #function is automatically activated when message is received
-    global startProcedure
     global players
     global codes
-    #set variable to start the procedure
+    #set player count
+    #if (msg.topic == "puzzle4/players"):
+    #    players = int(msg.payload)
+    #    print("Set player count to {} players". format(players))
     if (msg.topic == "puzzle4"):
         msg.payload = msg.payload.decode("utf-8")
-        if(str(msg.payload) == "start"):
-            startProcedure = True
-            print("Received start message")
-    #set player count
-    if (msg.topic == "puzzle4/players"):
-        players = int(msg.payload)
-        print("Set player count to {} players". format(players))
+        if(str(msg.payload) == "stop"):
+            print("Time is over")
+            ######MISSING: TELL THE PROGRAM TO STOP EVERYTHING#########
 
 #Connect to MQTT-Server
 def init_mqtt(): 
@@ -66,7 +67,8 @@ def runGUI():
     win = MyWindow()
     win.connect("destroy", Gtk.main_quit)
     win.show_all()
-    win.set_default_size(800, 480)
+    win.fullscreen()
+    #win.set_default_size(800, 480)
     Gtk.main()
 
 #specification of the GUI
@@ -79,8 +81,8 @@ class MyWindow(Gtk.Window):
 
         #show sequence
         self.image = Gtk.Image()
-        self.image.set_from_file("sequences/blank.jpg")
-        self.image.set_size_request(60,60)
+        self.image.set_from_file("sequences/startup.jpg")
+        #self.image.set_size_request(60,60)
         vbox.pack_start(self.image, True, True, 0)
 
         hbox = Gtk.Box(spacing=5)
@@ -145,6 +147,8 @@ class MyWindow(Gtk.Window):
         if (codeCorrect == True or codeWrong == True):
             if codeCorrect == True:
                 self.image.set_from_file("sequences/Correct.jpg")
+                Gtk.main_quit()
+                self.destroy()
             elif codeWrong == True:
                 self.image.set_from_file("sequences/Wrong.jpg")
         else:
@@ -208,6 +212,11 @@ def timerThread():
                     client.publish("puzzle4/esp/timer", "restart")
                     #restart with new sequence
                     startUp()
+                elif codeCorrect == True:
+                    ########MISSING: IMPLEMENT A FUNCTION FOR SHOWING THE BOOT-UP PROCESS########
+                    time.sleep(4)
+                    os.kill(os.getppid(), signal.SIGHUP)
+                    sys.exit()
                 return
         
 
@@ -221,6 +230,7 @@ def startUp():
     global picture
     global codeCorrect
     global codeWrong
+    global startup
 
     #generate random sequence number
     sequence = random.randint(0, 3)
@@ -238,7 +248,12 @@ def startUp():
 
     #reset stopTimer variable 
     stopTimer = False
-    picture = 0
+    if startup==True:
+        picture = -1
+        startup = False
+        #########MISSING: SEND MESSAGE TO THE TEXT TO SPEAK SYSTEM##########
+    else:
+        picture = 0
     codeWrong = False
     codeCorrect = False
 
@@ -256,8 +271,7 @@ if __name__ == "__main__":
     client = mqtt.Client()
     init_mqtt()
 
-    while(startProcedure == False):
-        time.sleep(0.1)
+    print("Starting picture puzzle")
 
     #starts the GUI in a thread
     gui_ready = threading.Event()
