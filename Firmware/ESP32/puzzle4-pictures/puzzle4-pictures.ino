@@ -55,9 +55,9 @@ int sequence[4][4][2] = {{{9, 3}, {4, 7}, {2, 1}, {6, 8}},
                   {{1, 3}, {8, 8}, {5, 9}, {6, 2}};
                   {{5, 1}, {2, 7}, {1, 4}, {8, 9}};
                   {{3, 4}, {6, 2}, {1, 8}, {9, 3}};
-                  {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
-                  {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
-                  {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}}};
+                  {{7, 1}, {3, 4}, {2, 8}, {6, 7}};
+                  {{3, 7}, {4, 5}, {0, 7}, {8, 1}};
+                  {{7, 0}, {1, 4}, {5, 8}, {6, 5}}};
 
 WiFiClient mqttClient;
 PubSubClient mqtt(mqttClient);
@@ -152,8 +152,6 @@ void loop() {
   //handle Button 1
   if(digitalRead(BUTTON_1) == 0) {
     //left
-    //Serial.println(sequence[esp][sequenceIndex][0]);
-    Serial.println(sequenceIndex);
     tm1637.display(0, sequence[esp][sequenceIndex][0]);
     segmentState[0] = 1;
   } else if (segmentState[0] == 1) {
