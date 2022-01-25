@@ -4,7 +4,10 @@
 import paho.mqtt.client as mqtt
 import subprocess
 import time
-import os
+import atexit
+
+#variables 
+players = 3
 
 
 #MQTT functions
@@ -15,14 +18,20 @@ def on_connect(client, userdata, flags, rc):
 
 #checks for MQTT messages
 def on_message(client, userdata, msg): #function is automatically activated when message is received
+    global players
+    #check if puzzle 4 should be activated
     if (msg.topic == "puzzle4"):
         msg.payload = msg.payload.decode("utf-8")
         if(str(msg.payload) == "start"):
             #start the Picture Puzzle 
             print("Received start message for the picture puzzle")
             #p = subprocess.call(["python3", "puzzle4_raspberry_gui.py"])
-            subprocess.call(["terminator", "--command=python3 puzzle4_raspberry_gui.py"], cwd="/home/pi/escape_room", stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            subprocess.call(["terminator", "--command=python3 puzzle4_raspberry_gui.py {}".format(players)], cwd="/home/pi/escape_room", stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
+    #check if player count is being adjusted
+    if (msg.topic == "puzzle4/players"):
+        players = int(msg.payload)
+        print("Received player count {}".format(players))
 
 #Connect to MQTT-Server
 def init_mqtt(): 
@@ -35,10 +44,18 @@ def init_mqtt():
        
     client.loop_start()
 
+def exit():
+    subprocess.run("vcgencmd display_power 1", shell=True)
+
 
 
 if __name__ == "__main__":
     #######Initalization########
+    #turn on display on exit
+    atexit.register(exit)
+    #turn off display 
+    subprocess.run("vcgencmd display_power 0", shell=True)
+    #wait for Wifi connection
     #starts the MQTT connection
     client = mqtt.Client()
     init_mqtt()
