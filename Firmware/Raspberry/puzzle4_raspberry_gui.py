@@ -51,13 +51,6 @@ def on_message(client, userdata, msg): #function is automatically activated when
             stopTimer = True
             timeOver = True
             updatePictures = True
-            client.publish("puzzle4/esp/timer", "error")
-            #tell the buttons to stop everything
-            client.publish("puzzle4/esp", "stop")
-            time.sleep(10)
-            #subprocess.run("vcgencmd display_power 0", shell=True)
-            os.kill(os.getppid(), signal.SIGHUP)
-            sys.exit()
 
 
 #Connect to MQTT-Server
@@ -66,7 +59,7 @@ def init_mqtt():
     client.on_connect = on_connect
     client.on_message = on_message
 
-    client.connect("192.168.178.30", 1883, 60) #10.8.166.20
+    client.connect("10.8.166.20", 1883, 60) #10.8.166.20
     client.subscribe("puzzle4/#") 
        
 
@@ -203,6 +196,7 @@ def timerThread():
     global stopTimer
     global codeCorrect
     global codeWrong
+    global timeOver
     #timerLength = 0
     if players == 2:
         timerLength = 120
@@ -222,8 +216,9 @@ def timerThread():
                     #notify the timer to stop, because the code is wrong
                     client.publish("puzzle4/esp/timer", "error")
                     client.publish("2/textToSpeech", "Code is incorrect. Please try again.")
-                    time.sleep(3)    
+                    time.sleep(5)    
                     client.publish("puzzle4/esp", "stop") 
+                    time.sleep(5)
                     #restart with new sequence
                     startUp()
                 elif codeCorrect == True:
@@ -236,7 +231,17 @@ def timerThread():
                     #tell the operator that puzzle 4 is solved
                     client.publish("operator/puzzle4", "solved")
                     time.sleep(20)
-                    #subprocess.run("vcgencmd display_power 0", shell=True)
+                    subprocess.run("vcgencmd display_power 0", shell=True)
+                    os.kill(os.getppid(), signal.SIGHUP)
+                    sys.exit()
+                elif timeOver == True:
+                    #send error message to timer
+                    client.publish("puzzle4/esp/timer", "error")
+                    time.sleep(5)
+                    #tell the buttons to stop everything
+                    client.publish("puzzle4/esp", "stop")
+                    time.sleep(15)
+                    subprocess.run("vcgencmd display_power 0", shell=True)
                     os.kill(os.getppid(), signal.SIGHUP)
                     sys.exit()
                 return
@@ -307,6 +312,6 @@ if __name__ == "__main__":
     gui_thread.start()
     gui_ready.wait()
 
-    #subprocess.run("vcgencmd display_power 1", shell=True)
+    subprocess.run("vcgencmd display_power 1", shell=True)
 
     startUp()

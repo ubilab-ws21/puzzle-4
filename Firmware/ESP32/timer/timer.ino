@@ -45,11 +45,11 @@ char msg[MAX_MSG] = {'\0'};
 TM1637 tm1637(CLK,DIO);
 
 // timer variables
-int timer2 = 300;  // timer for 2 players
-int timer3 = 230;  // timer for 3 players
-int timer4 = 200;  // timer for 4+ players
+int timer2 = 256;  // timer for 2 players
+int timer3 = 234;  // timer for 3 players
+int timer4 = 205;  // timer for 4+ players
 
-int timer = 230;  // default to 2:30 min
+int timer = 234;  // default to 2:30 min
 int position_minute = (timer/100U) % 10;
 int high_position_second = (timer/10U) % 10;
 int low_position_second = (timer/1U) % 10;

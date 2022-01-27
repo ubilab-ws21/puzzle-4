@@ -21,11 +21,11 @@
 #define networkCapabilities
 
 // Wifi Credentials
-#define SSID "ubilab_wifi"
-#define PWD "ohg4xah3oufohreiPe7e"
+#define SSID "ubilab_wifi" //ubilab_wifi
+#define PWD "ohg4xah3oufohreiPe7e" //ohg4xah3oufohreiPe7e
 
 //MQTT Credentials
-#define MQTT_SERVER_IP "10.8.166.20"
+#define MQTT_SERVER_IP "10.8.166.20" //10.8.166.20
 #define MQTT_PORT 1883
 #define MAX_MSG 50
 char msg[MAX_MSG] = {'\0'};
