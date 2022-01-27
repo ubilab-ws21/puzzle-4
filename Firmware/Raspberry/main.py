@@ -9,7 +9,6 @@ import atexit
 #variables 
 players = 3
 
-
 #MQTT functions
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code " + str(rc))
@@ -41,7 +40,7 @@ def init_mqtt():
 
     client.connect("192.168.178.30", 1883, 60) #10.8.166.20
     client.subscribe("puzzle4/#") 
-       
+
     client.loop_start()
 
 def exit():
@@ -54,10 +53,10 @@ if __name__ == "__main__":
     #turn on display on exit
     atexit.register(exit)
     #turn off display 
-    subprocess.run("vcgencmd display_power 0", shell=True)
+    #subprocess.run("vcgencmd display_power 0", shell=True)
     #wait for Wifi connection
     #starts the MQTT connection
-    client = mqtt.Client()
+    client = mqtt.Client("puzzle4_main")
     init_mqtt()
 
 

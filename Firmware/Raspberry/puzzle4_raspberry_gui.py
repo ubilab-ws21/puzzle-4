@@ -18,8 +18,8 @@ import signal
 import subprocess
 
 #variables
-#codes = [7548, 5849, 9834, 3170, 7413, 4469, 5716, 4827, 5392, 9263]
-codes = [1234, 1234, 1234, 1234, 1234, 1234, 1234, 1234, 1234, 1234]
+codes = [7548, 5849, 9834, 3170, 7413, 4469, 5716, 4827, 5392, 9263]
+#codes = [1234, 1234, 1234, 1234, 1234, 1234, 1234, 1234, 1234, 1234]
 players = 3
 updatePictures = False
 insertedCode = 0
@@ -52,10 +52,10 @@ def on_message(client, userdata, msg): #function is automatically activated when
             timeOver = True
             updatePictures = True
             client.publish("puzzle4/esp/timer", "error")
-            time.sleep(10)
             #tell the buttons to stop everything
             client.publish("puzzle4/esp", "stop")
-            subprocess.run("vcgencmd display_power 0", shell=True)
+            time.sleep(10)
+            #subprocess.run("vcgencmd display_power 0", shell=True)
             os.kill(os.getppid(), signal.SIGHUP)
             sys.exit()
 
@@ -129,12 +129,7 @@ class MyWindow(Gtk.Window):
             print("Correct")
             stopTimer = True
             codeCorrect = True
-            updatePictures = True
-
-            #notify the timer that the puzzle is solved
-            client.publish("puzzle4/esp/timer", "solved")
-            client.publish("puzzle4/esp", "stop")
-            
+            updatePictures = True           
 
         else:
             #reset the entry field
@@ -144,10 +139,6 @@ class MyWindow(Gtk.Window):
             stopTimer = True
             codeWrong = True
             updatePictures = True
-
-            #notify the timer to stop, because the code is wrong
-            client.publish("puzzle4/esp", "stop")
-            client.publish("puzzle4/esp/timer", "error")
 
 
     #changes picture
@@ -228,18 +219,24 @@ def timerThread():
             #check if the timer should be stopped because the code is wrong or correct
             if (stopTimer == True):
                 if codeWrong == True:
+                    #notify the timer to stop, because the code is wrong
+                    client.publish("puzzle4/esp/timer", "error")
                     client.publish("2/textToSpeech", "Code is incorrect. Please try again.")
-                    time.sleep(3)     
+                    time.sleep(3)    
+                    client.publish("puzzle4/esp", "stop") 
                     #restart with new sequence
                     startUp()
                 elif codeCorrect == True:
+                    #notify the timer that the puzzle is solved
+                    client.publish("puzzle4/esp/timer", "solved")
                     time.sleep(5)
+                    client.publish("puzzle4/esp", "stop")
                     client.publish("2/textToSpeech", "Code is correct. Server is starting up.")
                     updatePictures = True
-                    time.sleep(20)
                     #tell the operator that puzzle 4 is solved
                     client.publish("operator/puzzle4", "solved")
-                    subprocess.run("vcgencmd display_power 0", shell=True)
+                    time.sleep(20)
+                    #subprocess.run("vcgencmd display_power 0", shell=True)
                     os.kill(os.getppid(), signal.SIGHUP)
                     sys.exit()
                 return
@@ -269,7 +266,7 @@ def startUp():
     codeCorrect = False
 
     #generate random sequence number
-    sequence = random.randint(0, 3)
+    sequence = random.randint(0, 9)
     print("The current sequence is {}".format(sequence))
     print("The correct code is {}".format(codes[sequence]))
 
@@ -299,7 +296,7 @@ if __name__ == "__main__":
         players = int(sys.argv[1])
     print("Player count is set to {}".format(players))
     #starts the MQTT connection
-    client = mqtt.Client()
+    client = mqtt.Client("puzzle4")
     init_mqtt()
 
     print("Starting picture puzzle")
@@ -310,6 +307,6 @@ if __name__ == "__main__":
     gui_thread.start()
     gui_ready.wait()
 
-    subprocess.run("vcgencmd display_power 1", shell=True)
+    #subprocess.run("vcgencmd display_power 1", shell=True)
 
     startUp()
