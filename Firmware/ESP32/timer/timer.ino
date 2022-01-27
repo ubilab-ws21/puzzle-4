@@ -136,9 +136,9 @@ void loop() {
     mqtt.loop();
     
     while(!mqttStart){
-      Serial.println("Waiting for start signal over MQTT");
+      //Serial.println("Waiting for start signal over MQTT");
       mqtt.loop();
-      delay(1000);
+      //delay(1000);
     }
   #endif
 
@@ -211,6 +211,10 @@ void analyzeMQTTMessage(char* topic, char* msg) {
     mqttStart = true;
     blinks = false;
     puzzle_solved = false;
+    reset = false;
+    position_minute = (timer/100U) % 10;
+    high_position_second = (timer/10U) % 10;
+    low_position_second = (timer/1U) % 10;
   }
 
   // check for end-message
