@@ -191,6 +191,12 @@ void loop() {
     tm1637.display(3, low_position_second);
     tm1637.point(true);
   }
+
+  if (!mqtt.connected()){
+    Serial.println("Client disconnected!");
+    reconnect();
+    mqtt.loop();
+  }
 }
 
 // MQTT Callback function
@@ -275,4 +281,15 @@ void analyzeMQTTMessage(char* topic, char* msg) {
     timer = 230;
     Serial.println("Puzzle solved!!");
   }
+}
+
+void reconnect() { 
+  while (!mqtt.connected()) {  
+    if (mqtt.connect(NAME)) { 
+      Serial.println("MQTT connected");        
+      mqtt.setCallback(mqttCallback);
+      mqtt.subscribe("puzzle4/esp");
+      mqtt.subscribe("puzzle4/esp/sequence");  
+    } 
+  }    
 }

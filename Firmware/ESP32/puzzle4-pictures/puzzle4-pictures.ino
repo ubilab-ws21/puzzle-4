@@ -25,7 +25,7 @@
 #define PWD "ohg4xah3oufohreiPe7e" //ohg4xah3oufohreiPe7e
 
 //MQTT Credentials
-#define MQTT_SERVER_IP "10.8.166.20" //10.8.166.20
+#define MQTT_SERVER_IP "10.8.166.20"
 #define MQTT_PORT 1883
 #define MAX_MSG 50
 char msg[MAX_MSG] = {'\0'};
@@ -47,6 +47,8 @@ TM1637 tm1637(CLK,DIO);
 bool mqttStart = false;
 int sequenceIndex = 0; 
 int esp = 0; // ESP0 -> 0, ESP1 -> 1, ESP2 -> 2, ESP3 -> 3, 
+
+int count = 0;
 
 int sequence[10][4][2] = {{{9, 3}, {4, 7}, {2, 1}, {6, 8}},
                   {{3, 1}, {2, 9}, {3, 5}, {2, 7}},
@@ -177,8 +179,12 @@ void loop() {
   }
 
   delay(10);
-  
 
+  if (!mqtt.connected()){
+    Serial.println("Client disconnected!");
+    reconnect();
+    mqtt.loop();
+  }
 }
 
 // MQTT Callback function
@@ -220,4 +226,15 @@ void setLED(bool state) {
     digitalWrite(LED_1, LOW);
     digitalWrite(LED_2, LOW);
   }
+}
+
+void reconnect() { 
+  while (!mqtt.connected()) {  
+    if (mqtt.connect(NAME)) { 
+      Serial.println("MQTT connected");        
+      mqtt.setCallback(mqttCallback);
+      mqtt.subscribe("puzzle4/esp");
+      mqtt.subscribe("puzzle4/esp/sequence");  
+    } 
+  }    
 }
