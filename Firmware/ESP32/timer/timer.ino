@@ -13,6 +13,7 @@
  * puzzle4/esp/timer/players [int] - set the number of players to influence puzzle timer 2  -> 3:00
  *                                                                                       3  -> 2:30
  *                                                                                       4+ -> 2:00
+ * puzzle4/esp/timer/button [on, off] - sets button state                                                                                    
  */
  
 #include <WiFi.h>
@@ -44,6 +45,10 @@ char msg[MAX_MSG] = {'\0'};
 #define DIO 23  // data
 TM1637 tm1637(CLK,DIO);
 
+//pins for arcade button
+#define LED 13
+#define BUTTON 19
+
 // timer variables
 int timer2 = 256;  // timer for 2 players
 int timer3 = 234;  // timer for 3 players
@@ -63,6 +68,8 @@ bool reset = false;
 bool blinks = false;
 bool mqttStart = false;
 bool puzzle_solved = false;
+bool button_light = false;
+bool button_press = false;
 int number_of_players = 0;
 
 WiFiClient mqttClient;
@@ -104,6 +111,7 @@ void setup() {
     mqtt.subscribe("puzzle4/esp");
     mqtt.subscribe("puzzle4/esp/timer");
     mqtt.subscribe("puzzle4/esp/timer/players");
+    mqtt.subscribe("puzzle4/esp/timer/button");
 
     // Arduino OTA
     ArduinoOTA.setHostname(NAME);
@@ -126,6 +134,10 @@ void setup() {
   tm1637.set(4);  // Bright-level from 0 to 7
 
   tm1637.clearDisplay();
+
+  //button and button light
+  pinMode(LED, OUTPUT);
+  pinMode(BUTTON, INPUT_PULLUP);
   
 }
 
@@ -134,13 +146,51 @@ void loop() {
     ArduinoOTA.handle();
   
     mqtt.loop();
-    
+
     while(!mqttStart){
+      //allow changing button light before start mqtt message
+      if (button_light == true) {
+        digitalWrite(LED, HIGH);
+      } else if (button_light == false) {
+        digitalWrite(LED, LOW);
+      }
+
+      //check button state before start mqtt message
+      if (digitalRead(BUTTON) == 0) {
+        if (button_press == false) {
+          button_press = true;
+          mqtt.publish("puzzle4/button", "true");
+        }
+      } else {
+        if (button_press == true) {
+          button_press = false;
+          mqtt.publish("puzzle4/button", "false");
+        }
+      }
       //Serial.println("Waiting for start signal over MQTT");
       mqtt.loop();
-      //delay(1000);
     }
   #endif
+
+  //light up button when mqtt message arrives
+  if (button_light == true) {
+    digitalWrite(LED, HIGH);
+  } else if (button_light == false) {
+    digitalWrite(LED, LOW);
+  }
+
+  //check for button state
+  if (digitalRead(BUTTON) == 0) {
+    if (button_press == false) {
+      button_press = true;
+      mqtt.publish("puzzle4/button", "true");
+    }
+  } else {
+    if (button_press == true) {
+      button_press = false;
+      mqtt.publish("puzzle4/button", "false");
+    }
+  }
 
   if (!reset and !puzzle_solved) {
     // enter every second if reset is false
@@ -280,6 +330,17 @@ void analyzeMQTTMessage(char* topic, char* msg) {
     puzzle_solved = true;
     timer = 230;
     Serial.println("Puzzle solved!!");
+  }
+
+  //check if button should be turned on
+  if(strcmp(topic, "puzzle4/esp/timer/button") == 0 and strcmp(msg, "on") == 0) {
+    button_light = true;
+    Serial.println("Button light turned on");
+  }
+  
+  if(strcmp(topic, "puzzle4/esp/timer/button") == 0 and strcmp(msg, "off") == 0) {
+    button_light = false;
+    Serial.println("Button light turned off");
   }
 }
 
