@@ -1,5 +1,8 @@
 #!/usr/bin/python3
 
+#TODO: messages to the tts system
+#      change all mqtt communication with operator to JSON format
+
 #needed for MQTT communication
 import paho.mqtt.client as mqtt #pip install paho-mqtt
 
@@ -28,15 +31,21 @@ sequence = 0
 stopTimer = False
 codeCorrect = False
 codeWrong = False
+reset = False
 startup = True
 timeOver = False
 finished = False
+bootup = 1
+buttonPressed = False
+busy = False
+progress = 0
 
 #MQTT functions
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code " + str(rc))
     if (rc==0):
         print("Connected successfully!")
+    client.subscribe("puzzle4/#")
 
 #checks for MQTT messages
 def on_message(client, userdata, msg): #function is automatically activated when message is received
@@ -44,13 +53,32 @@ def on_message(client, userdata, msg): #function is automatically activated when
     global stopTimer
     global timeOver
     global updatePictures
+    global buttonPressed
+    global startup
+    global bootup
+    global busy
+    global finished
     if (msg.topic == "puzzle4"):
         msg.payload = msg.payload.decode("utf-8")
         if(str(msg.payload) == "stop"):
             print("Time is over")
             stopTimer = True
             timeOver = True
+            bootup = 0
             updatePictures = True
+    if (msg.topic == "puzzle4/button"):
+        msg.payload = msg.payload.decode("utf-8")
+        if(str(msg.payload) == "true"):
+            buttonPressed = True
+        elif (str(msg.payload) == "false"):
+            buttonPressed = False
+            #wait till startup procedure or busy is finished
+            if (timeOver != True): #codeCorrect != True or 
+                while startup == True or busy == True:
+                    time.sleep(0.1)
+                startup = True
+                stopTimer = True
+
 
 
 #Connect to MQTT-Server
@@ -59,7 +87,7 @@ def init_mqtt():
     client.on_connect = on_connect
     client.on_message = on_message
 
-    client.connect("10.8.166.20", 1883, 60) #10.8.166.20
+    client.connect("192.168.178.30", 1883, 60) #10.8.166.20
     client.subscribe("puzzle4/#") 
        
 
@@ -86,7 +114,7 @@ class MyWindow(Gtk.Window):
 
         #show sequence
         self.image = Gtk.Image()
-        self.image.set_from_file("sequences/startup.jpg")
+        self.image.set_from_file("sequences/boot.jpg")
         #self.image.set_size_request(60,60)
         vbox.pack_start(self.image, True, True, 0)
 
@@ -98,6 +126,8 @@ class MyWindow(Gtk.Window):
         self.entry.set_placeholder_text("Enter Code")
         self.entry.set_max_length(4)
         self.entry.set_alignment(0.5)
+        self.entry.set_editable(False)
+        self.entry.connect("activate", self.on_button_clicked)
         hbox.pack_start(self.entry, True, True, 0)
 
         self.button = Gtk.Button(label="Submit Code")
@@ -116,13 +146,15 @@ class MyWindow(Gtk.Window):
         global codeCorrect
         global codeWrong
         global updatePictures
+        global busy
         insertedCode = int(self.entry.get_text())
 
         if (insertedCode == codes[sequence]):
             print("Correct")
             stopTimer = True
             codeCorrect = True
-            updatePictures = True           
+            updatePictures = True
+            #busy = True           
 
         else:
             #reset the entry field
@@ -132,6 +164,7 @@ class MyWindow(Gtk.Window):
             stopTimer = True
             codeWrong = True
             updatePictures = True
+            busy = True
 
 
     #changes picture
@@ -143,40 +176,60 @@ class MyWindow(Gtk.Window):
         global stopTimer
         global updatePictures
         global finished
-        if (codeCorrect == True or codeWrong == True):
+        global bootup
+        global reset
+        global busy
+        global progress
+
+        #boot sequence
+        if bootup > 0:
+            self.image.set_from_file("sequences/boot_{}.jpg".format(bootup))
+            bootup = bootup + 1
+        
+        #code correct or incorrect
+        elif (codeCorrect == True or codeWrong == True):
             if codeCorrect == True:
                 if finished == False:
                     self.image.set_from_file("sequences/Correct.jpg")
                     self.button.set_sensitive(False)
+                    self.entry.set_editable(False)
+                    finished = True
+                #progressbar
                 else:
-                    print("Test")
-                    self.image.set_from_file("sequences/startup2.jpg")
-                finished = True
+                    self.image.set_from_file("progressbar/progress_{}.JPG".format(progress))
+                    progress = progress + 1
             elif codeWrong == True:
                 self.image.set_from_file("sequences/Wrong.jpg")
+
+        #time is over (of the whole escape room)
         elif (timeOver == True):
             self.image.set_from_file("sequences/over.jpg")
             self.button.set_sensitive(False)
+            self.entry.set_editable(False)
+
+        #the puzzle sequence itself
         else:
-            if picture == 0 or picture == 5 or picture == 10:
+            if picture == 0 or picture == 5:
                 self.image.set_from_file("sequences/{}_0.JPG".format(sequence))
                 self.button.set_sensitive(True)
-            elif picture == 1 or picture == 6 or picture == 11: 
+                self.entry.set_editable(True)
+            elif picture == 1 or picture == 6: 
                 self.image.set_from_file("sequences/{}_1.JPG".format(sequence))
             elif picture == 2 or picture == 7 or picture == 12:
                 self.image.set_from_file("sequences/{}_2.JPG".format(sequence))
-            elif picture == 3 or picture == 8 or picture == 13:
+            elif picture == 3 or picture == 8:
                 self.image.set_from_file("sequences/{}_3.JPG".format(sequence))
-            elif picture == 4 or picture == 9:
+            elif picture == 4:
                 self.image.set_from_file("sequences/Restart.jpg")
-            elif picture == 14:
+            elif picture == 9:
                 self.image.set_from_file("sequences/Reset.jpg")
                 #reset the entry field
                 self.entry.set_text("")
 
                 print("Reset")
                 stopTimer = True
-                codeWrong = True
+                reset = True
+                busy = True
             
             picture = picture + 1
 
@@ -197,13 +250,17 @@ def timerThread():
     global codeCorrect
     global codeWrong
     global timeOver
-    #timerLength = 0
+    global startup
+    global bootup
+    global busy
+    global reset
+
     if players == 2:
-        timerLength = 120
+        timerLength = 70
     elif players == 3:
-        timerLength = 105
+        timerLength = 60
     elif players == 4:
-        timerLength = 85
+        timerLength = 50
     
     while(True):
         updatePictures = True
@@ -223,27 +280,59 @@ def timerThread():
                     startUp()
                 elif codeCorrect == True:
                     #notify the timer that the puzzle is solved
-                    client.publish("puzzle4/esp/timer", "solved")
-                    time.sleep(5)
-                    client.publish("puzzle4/esp", "stop")
-                    client.publish("2/textToSpeech", "Code is correct. Server is starting up.")
-                    updatePictures = True
                     #tell the operator that puzzle 4 is solved
-                    client.publish("operator/puzzle4", "solved")
-                    time.sleep(20)
+                    #TODO: Message to the operator + also start message to operator
+                    client.publish("puzzle4/esp/timer", "solved")
+                    client.publish("2/textToSpeech", "Code is correct")
+                    time.sleep(5)
+                    client.publish("puzzle4/esp/timer/button", "off")
+                    client.publish("puzzle4/esp", "stop")
+                    client.publish("2/textToSpeech", "Server is starting up.")
+                    #display progressbar
+                    for i in range(0, 16):
+                        if (i == 5 or i == 6):
+                            time.sleep(2)
+                        elif (i == 5 or i == 6):
+                            time.sleep(0.3)
+                        if (i == 9 or i == 10):
+                            time.sleep(1)
+                        elif (i == 14):
+                            time.sleep(3)
+                        else:
+                            time.sleep(0.5)
+                        #TODO: message to texttospeach system
+                        updatePictures = True                  
+                    time.sleep(5)
                     subprocess.run("vcgencmd display_power 0", shell=True)
                     os.kill(os.getppid(), signal.SIGHUP)
                     sys.exit()
+                elif reset == True:
+                    #notify the timer to stop, because the code is wrong
+                    client.publish("puzzle4/esp/timer", "error")
+                    client.publish("2/textToSpeech", "No code entered in time. Please try again.")
+                    time.sleep(5)    
+                    client.publish("puzzle4/esp", "stop") 
+                    time.sleep(5)
+                    #restart with new sequence
+                    startUp()
                 elif timeOver == True:
                     #send error message to timer
                     client.publish("puzzle4/esp/timer", "error")
                     time.sleep(5)
                     #tell the buttons to stop everything
+                    client.publish("puzzle4/esp/timer/button", "off")
                     client.publish("puzzle4/esp", "stop")
                     time.sleep(15)
                     subprocess.run("vcgencmd display_power 0", shell=True)
                     os.kill(os.getppid(), signal.SIGHUP)
                     sys.exit()
+                elif startup == True:
+                    #restart with new sequence when button was released
+                    bootup = 1
+                    #tell the buttons to stop everything
+                    client.publish("puzzle4/esp/timer/button", "off")
+                    client.publish("puzzle4/esp", "stop")
+                    startUp()
                 return
         
 
@@ -259,16 +348,50 @@ def startUp():
     global codeWrong
     global startup
     global updatePictures
+    global bootup
+    global buttonPressed
+    global startup
+    global busy
+    global reset
+    global timeOver
 
     #reset stopTimer variable 
     stopTimer = False
-    if startup==True:
-        client.publish("2/textToSpeech", "Server is starting up. Please enter code on the next screen to unlock the server")
-        time.sleep(10)
-        startup = False
-    picture = 0
+    busy = False
     codeWrong = False
     codeCorrect = False
+    reset = False
+
+    if (startup == True and timeOver != True):
+        updatePictures = True
+        client.publish("puzzle4/esp/timer/button", "on")
+        client.publish("2/textToSpeech", "Please press and hold the red button to start server bootup process.")
+        while(buttonPressed == False):
+            time.sleep(0.1)
+            #stop in case the time is over
+            if (timeOver == True):
+                #send error message to timer
+                client.publish("puzzle4/esp/timer", "error")
+                time.sleep(5)
+                #tell the buttons to stop everything
+                client.publish("puzzle4/esp/timer/button", "off")
+                client.publish("puzzle4/esp", "stop")
+                time.sleep(15)
+                subprocess.run("vcgencmd display_power 0", shell=True)
+                os.kill(os.getppid(), signal.SIGHUP)
+                sys.exit()            
+
+        updatePictures = True
+        client.publish("2/textToSpeech", "Safety meassure: Keep pressing the button during bootup.")
+        time.sleep(5)
+        
+        updatePictures = True
+        client.publish("2/textToSpeech", "Server is starting up. Please enter code on the next screen.")
+        time.sleep(5)
+        startup = False
+    
+    bootup = 0
+    picture = 0
 
     #generate random sequence number
     sequence = random.randint(0, 9)
