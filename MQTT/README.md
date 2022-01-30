@@ -17,7 +17,9 @@ The following messages can be used to start or stop puzzle 4. These are send fro
 | trigger | off    | skipped |   | Puzzle switches immediately into the solved state and waits for a 'trigger off' to restart. |
 |         |        |         |   |                                                                                                     |
 | status  | active |         |   |  The picture puzzle is solved. |
+
 The following messages are sent by the Raspi to report the current status:
+
 | method | state    | data |   | description                                                                         |
 |--------|----------|------|---|-------------------------------------------------------------------------------------|
 | status | inactive |      |   | The Raspi has finished it's initialization and waits for a 'trigger on'.            |
