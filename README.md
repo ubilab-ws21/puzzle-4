@@ -73,10 +73,15 @@ XXFoto von zusammengelötetem Aufbau mit offener caseXX
 - [x] Testing the network communication between the systems in the escape room
 - [x] Assembly of the missing parts
 - [x] Designing the final sequences for the riddle
-- [ ] ...
-- [ ] Printing and foil-coating the pictures
-- [ ] Mount all parts in the room
+- [x] Printing and foil-coating the pictures
+- [x] Mount all parts in the room
+- [x] Added progress bar after finishing the riddle
+- [x] Implement extra button as dead-man switch
+- [x] Fixed issues after integration run
+- [x] Make use of AR hint system
+- [ ] Coordinate MQTT with operator
 - [ ] Provide power supply for all of them
 - [ ] Last testing and bug fixing
+- [ ] Finish documentation
 - [ ] Final run and presentation
 
