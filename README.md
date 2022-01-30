@@ -48,6 +48,9 @@ Erklärung dass nur der Raspi mit außen kommuniziert und der Rest intern bleibt
 XXDiagramm mit den verschiedenen topics für die verschiedenen ObjekteXX
 Erklärung wofür welches Topic und was für Nachrichten in diesem.
 
+Hier kommt das übersichtsbild rein und ein verweis auf den MQTT Ordner in dem dann die Tabelle und die Struktur sind.
+[MQTT overview](https://github.com/ubilab-escape/first-door/blob/master/MQTT_publish_messages.docx "MQTT overview")
+
 ## Hardware <a name="4"></a>
 All documents and manuals needed to reconstruct this puzzle are in the "Hardware" folder.
 XXFoto von zusammengelötetem Aufbau mit offener caseXX
