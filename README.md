@@ -4,11 +4,11 @@ The Firmware folder contains all the Software code used for this project.
 In the Sequences folder are the created sequences as .mp4 and .pdf and also a solution file.
 The Hardware folder contains most of the manuals and guides for the used hardware parts in our riddle for example the pin-assignment for the ESP32.
 
-## Content#
+## Content #
 * [Puzzle in Storyline](#1)
 * [How the puzzle works](#2)
-* [Hardware](#3)
-* [MQTT Documentation](#4)
+* [MQTT Documentation](#3)
+* [Hardware](#4)
 * [Project Timeline](#5)
 
 
