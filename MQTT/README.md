@@ -7,6 +7,7 @@
 | puzzle4/esp/timer | messages for Timer ESP | Timer ESP | Raspi |
 | puzzle4/esp/timer/players | messages for Timer ESP | Timer ESP | Raspi |
 | puzzle4/esp/sequence | messages for picture ESPs | ESP1-4 | Raspi |
+| game/puzzle4 | AR hint system | Raspi, AR System | Raspi, AR System |
 
 ### MQTT commands
 The following messages can be used to start or stop puzzle 4. These are send from the operator to the Raspi in "4/gamecontrol":
@@ -18,7 +19,7 @@ The following messages can be used to start or stop puzzle 4. These are send fro
 |         |        |         |   |                                                                                                     |
 | status  | active |         |   |  The picture puzzle is solved. |
 
-The following messages are sent by the Raspi to report the current status:
+The following messages are sent by the Raspi in "4/gamecontrol" to report the current status:
 
 | method | state    | data |   | description                                                                         |
 |--------|----------|------|---|-------------------------------------------------------------------------------------|
