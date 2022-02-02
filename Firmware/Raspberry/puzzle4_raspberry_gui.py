@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 #TODO: messages to the tts system
-#      change all mqtt communication with operator to JSON format
 
 #needed for MQTT communication
 import paho.mqtt.client as mqtt #pip install paho-mqtt
@@ -19,6 +18,7 @@ import sys
 import os
 import signal
 import subprocess
+import json
 
 #variables
 codes = [7548, 5849, 9834, 3170, 7413, 4469, 5716, 4827, 5392, 9263]
@@ -46,6 +46,8 @@ def on_connect(client, userdata, flags, rc):
     if (rc==0):
         print("Connected successfully!")
     client.subscribe("puzzle4/#")
+    client.subscribe("4/gamecontrol")
+    client.subscribe("op/gameOptions")
 
 #checks for MQTT messages
 def on_message(client, userdata, msg): #function is automatically activated when message is received
@@ -59,8 +61,9 @@ def on_message(client, userdata, msg): #function is automatically activated when
     global busy
     global finished
     if (msg.topic == "puzzle4"):
-        msg.payload = msg.payload.decode("utf-8")
-        if(str(msg.payload) == "stop"):
+        #msg.payload = msg.payload.decode("utf-8")
+        msg_json = json.load(msg.payload)
+        if(msg_json["trigger"] == "off"):
             print("Time is over")
             stopTimer = True
             timeOver = True
@@ -89,6 +92,10 @@ def init_mqtt():
 
     client.connect("192.168.178.30", 1883, 60) #10.8.166.20
     client.subscribe("puzzle4/#") 
+    client.subscribe("4/gamecontrol")
+    client.subscribe("op/gameOptions")
+
+    client.publish("4/gamecontrol", "{\"status\": \"active\"}", retain=True)
        
 
     client.loop_start()
@@ -272,7 +279,7 @@ def timerThread():
                 if codeWrong == True:
                     #notify the timer to stop, because the code is wrong
                     client.publish("puzzle4/esp/timer", "error")
-                    client.publish("2/textToSpeech", "Code is incorrect. Please try again.")
+                    client.publish("2/textToSpeech", "{\"method\": \"message\", \"data\": \"Code is incorrect. Please try again.\"}")
                     time.sleep(5)    
                     client.publish("puzzle4/esp", "stop") 
                     time.sleep(5)
@@ -280,14 +287,13 @@ def timerThread():
                     startUp()
                 elif codeCorrect == True:
                     #notify the timer that the puzzle is solved
-                    #tell the operator that puzzle 4 is solved
-                    #TODO: Message to the operator + also start message to operator
+                    client.publish("4/gamecontrol", "{\"status\": \"active\"}", retain=True)
                     client.publish("puzzle4/esp/timer", "solved")
-                    client.publish("2/textToSpeech", "Code is correct")
+                    client.publish("2/textToSpeech", "{\"method\": \"message\", \"data\": \"Code is correct\"}")
                     time.sleep(5)
                     client.publish("puzzle4/esp/timer/button", "off")
                     client.publish("puzzle4/esp", "stop")
-                    client.publish("2/textToSpeech", "Server is starting up.")
+                    client.publish("2/textToSpeech", "{\"method\": \"message\", \"data\": \"Server is starting up.\"}")
                     #display progressbar
                     for i in range(0, 16):
                         if (i == 5 or i == 6):
@@ -309,7 +315,7 @@ def timerThread():
                 elif reset == True:
                     #notify the timer to stop, because the code is wrong
                     client.publish("puzzle4/esp/timer", "error")
-                    client.publish("2/textToSpeech", "No code entered in time. Please try again.")
+                    client.publish("2/textToSpeech", "{\"method\": \"message\", \"data\": \"No code entered in time. Please try again.\"}")
                     time.sleep(5)    
                     client.publish("puzzle4/esp", "stop") 
                     time.sleep(5)
@@ -322,6 +328,7 @@ def timerThread():
                     #tell the buttons to stop everything
                     client.publish("puzzle4/esp/timer/button", "off")
                     client.publish("puzzle4/esp", "stop")
+                    client.publish("4/gamecontrol", "{\"status\": \"solved\"}", retain=True)
                     time.sleep(15)
                     subprocess.run("vcgencmd display_power 0", shell=True)
                     os.kill(os.getppid(), signal.SIGHUP)
@@ -365,7 +372,7 @@ def startUp():
     if (startup == True and timeOver != True):
         updatePictures = True
         client.publish("puzzle4/esp/timer/button", "on")
-        client.publish("2/textToSpeech", "Please press and hold the red button to start server bootup process.")
+        client.publish("2/textToSpeech", "{\"method\": \"message\", \"data\": \"Please press and hold the red button to start server bootup process.\"}")
         while(buttonPressed == False):
             time.sleep(0.1)
             #stop in case the time is over
@@ -382,11 +389,11 @@ def startUp():
                 sys.exit()            
 
         updatePictures = True
-        client.publish("2/textToSpeech", "Safety meassure: Keep pressing the button during bootup.")
+        client.publish("2/textToSpeech", "{\"method\": \"message\", \"data\": \"Safety meassure: Keep pressing the button during bootup.\"}")
         time.sleep(5)
         
         updatePictures = True
-        client.publish("2/textToSpeech", "Server is starting up. Please enter code on the next screen.")
+        client.publish("2/textToSpeech", "{\"method\": \"message\", \"data\": \"Server is starting up. Please enter code on the next screen.\"}")
         time.sleep(5)
         startup = False
     
