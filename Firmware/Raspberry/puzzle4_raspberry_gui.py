@@ -60,15 +60,16 @@ def on_message(client, userdata, msg): #function is automatically activated when
     global bootup
     global busy
     global finished
-    if (msg.topic == "puzzle4"):
-        #msg.payload = msg.payload.decode("utf-8")
-        msg_json = json.load(msg.payload)
-        if(msg_json["trigger"] == "off"):
-            print("Time is over")
-            stopTimer = True
-            timeOver = True
-            bootup = 0
-            updatePictures = True
+    if (msg.topic == "4/gamecontrol"):
+        msg.payload = msg.payload.decode("utf-8")
+        msg_json = json.loads(msg.payload)
+        if(msg_json["method"] == "trigger"):
+            if(msg_json["state"] == "off"):
+                print("Time is over")
+                stopTimer = True
+                timeOver = True
+                bootup = 0
+                updatePictures = True
     if (msg.topic == "puzzle4/button"):
         msg.payload = msg.payload.decode("utf-8")
         if(str(msg.payload) == "true"):
@@ -90,12 +91,12 @@ def init_mqtt():
     client.on_connect = on_connect
     client.on_message = on_message
 
-    client.connect("192.168.178.30", 1883, 60) #10.8.166.20
+    client.connect("10.8.166.20", 1883, 60) #10.8.166.20
     client.subscribe("puzzle4/#") 
     client.subscribe("4/gamecontrol")
     client.subscribe("op/gameOptions")
 
-    client.publish("4/gamecontrol", "{\"status\": \"active\"}", retain=True)
+    client.publish("4/gamecontrol", "{\"method\": \"status\", \"state\": \"active\"}", retain=True)
        
 
     client.loop_start()
@@ -287,7 +288,7 @@ def timerThread():
                     startUp()
                 elif codeCorrect == True:
                     #notify the timer that the puzzle is solved
-                    client.publish("4/gamecontrol", "{\"status\": \"active\"}", retain=True)
+                    client.publish("4/gamecontrol", "{\"method\": \"status\", \"state\": \"solved\"}", retain=True)
                     client.publish("puzzle4/esp/timer", "solved")
                     client.publish("2/textToSpeech", "{\"method\": \"message\", \"data\": \"Code is correct\"}")
                     time.sleep(5)
@@ -306,9 +307,10 @@ def timerThread():
                             time.sleep(3)
                         else:
                             time.sleep(0.5)
-                        #TODO: message to texttospeach system
-                        updatePictures = True                  
+                        updatePictures = True 
+                    client.publish("2/textToSpeech", "{\"method\": \"message\", \"data\": \"Server is running. Congratulations!\"}")                 
                     time.sleep(5)
+                    client.publish("4/gamecontrol", "{\"method\": \"status\", \"state\": \"inactive\"}", retain=True)
                     subprocess.run("vcgencmd display_power 0", shell=True)
                     os.kill(os.getppid(), signal.SIGHUP)
                     sys.exit()
@@ -328,8 +330,9 @@ def timerThread():
                     #tell the buttons to stop everything
                     client.publish("puzzle4/esp/timer/button", "off")
                     client.publish("puzzle4/esp", "stop")
-                    client.publish("4/gamecontrol", "{\"status\": \"solved\"}", retain=True)
+                    client.publish("4/gamecontrol", "{\"method\": \"status\", \"state\": \"failed\"}", retain=True)
                     time.sleep(15)
+                    client.publish("4/gamecontrol", "{\"method\": \"status\", \"state\": \"inactive\"}", retain=True)
                     subprocess.run("vcgencmd display_power 0", shell=True)
                     os.kill(os.getppid(), signal.SIGHUP)
                     sys.exit()
@@ -362,6 +365,8 @@ def startUp():
     global reset
     global timeOver
 
+    time.sleep(1)
+
     #reset stopTimer variable 
     stopTimer = False
     busy = False
@@ -378,12 +383,14 @@ def startUp():
             #stop in case the time is over
             if (timeOver == True):
                 #send error message to timer
+                client.publish("4/gamecontrol", "{\"method\": \"status\", \"state\": \"failed\"}", retain=True)
                 client.publish("puzzle4/esp/timer", "error")
                 time.sleep(5)
                 #tell the buttons to stop everything
                 client.publish("puzzle4/esp/timer/button", "off")
                 client.publish("puzzle4/esp", "stop")
                 time.sleep(15)
+                client.publish("4/gamecontrol", "{\"method\": \"status\", \"state\": \"inactive\"}", retain=True)
                 subprocess.run("vcgencmd display_power 0", shell=True)
                 os.kill(os.getppid(), signal.SIGHUP)
                 sys.exit()            

@@ -15,6 +15,7 @@ def on_connect(client, userdata, flags, rc):
     print("Connected with result code " + str(rc))
     if (rc==0):
         print("Connected successfully!")
+    client.publish("4/gamecontrol", "{\"method\": \"status\", \"state\": \"inactive\"}", retain=True)
     client.subscribe("puzzle4/#") 
     client.subscribe("4/gamecontrol")
     client.subscribe("op/gameOptions")
@@ -24,19 +25,21 @@ def on_message(client, userdata, msg): #function is automatically activated when
     global players
     #check if puzzle 4 should be activated
     if (msg.topic == "4/gamecontrol"):
-        #msg.payload = msg.payload.decode("utf-8")
-        msg_json = json.load(msg.payload)
-        if(msg_json["trigger"] == "on"):
-            #start the Picture Puzzle 
-            print("Received start message for the picture puzzle")
-            #p = subprocess.call(["python3", "puzzle4_raspberry_gui.py"])
-            players_copy = players
-            players = 3
-            subprocess.call(["terminator", "--command=python3 puzzle4_raspberry_gui.py {}".format(players_copy)], cwd="/home/pi/escape_room", stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        msg.payload = msg.payload.decode("utf-8")
+        msg_json = json.loads(msg.payload)
+        if(msg_json["method"] == "trigger"):
+            if(msg_json["state"] == "on"):
+                #start the Picture Puzzle 
+                print("Received start message for the picture puzzle")
+                #p = subprocess.call(["python3", "puzzle4_raspberry_gui.py"])
+                players_copy = players
+                players = 3
+                subprocess.call(["terminator", "--command=python3 puzzle4_raspberry_gui.py {}".format(players_copy)], cwd="/home/pi/escape_room", stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
     #check if player count is being adjusted
     if (msg.topic == "op/gameOptions"):
-        msg_json = json.load(msg.payload)
+        msg.payload = msg.payload.decode("utf-8")
+        msg_json = json.loads(msg.payload)
         players = msg_json["participants"]
         if players > 4:
             players = 4
@@ -48,12 +51,12 @@ def init_mqtt():
     client.on_connect = on_connect
     client.on_message = on_message
 
-    client.connect("192.168.178.30", 1883, 60) #10.8.166.20
+    client.connect("10.8.166.20", 1883, 60) #10.8.166.20
     client.subscribe("puzzle4/#")
     client.subscribe("4/gamecontrol")
     client.subscribe("op/gameOptions") 
 
-    client.publish("4/gamecontrol", "{\"status\": \"inactive\"}", retain=True)
+    client.publish("4/gamecontrol", "{\"method\": \"status\", \"state\": \"inactive\"}", retain=True)
 
     client.loop_start()
 
