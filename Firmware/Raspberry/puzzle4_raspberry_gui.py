@@ -23,6 +23,7 @@ import json
 #variables
 codes = [7548, 5849, 9834, 3170, 7413, 4469, 5716, 4827, 5392, 9263]
 #codes = [1234, 1234, 1234, 1234, 1234, 1234, 1234, 1234, 1234, 1234]
+
 players = 3
 updatePictures = False
 insertedCode = 0
@@ -39,6 +40,7 @@ bootup = 1
 buttonPressed = False
 busy = False
 progress = 0
+skip = False
 
 #MQTT functions
 def on_connect(client, userdata, flags, rc):
@@ -60,6 +62,7 @@ def on_message(client, userdata, msg): #function is automatically activated when
     global bootup
     global busy
     global finished
+    global codeCorrect
     if (msg.topic == "4/gamecontrol"):
         msg.payload = msg.payload.decode("utf-8")
         msg_json = json.loads(msg.payload)
@@ -68,6 +71,11 @@ def on_message(client, userdata, msg): #function is automatically activated when
                 print("Time is over")
                 stopTimer = True
                 timeOver = True
+                bootup = 0
+                updatePictures = True
+            elif(msg_json["state"] == "skip"):
+                stopTimer = True
+                codeCorrect = True
                 bootup = 0
                 updatePictures = True
     if (msg.topic == "puzzle4/button"):
@@ -365,6 +373,7 @@ def startUp():
     global busy
     global reset
     global timeOver
+    global skip
 
     #time.sleep(1)
 
@@ -394,8 +403,39 @@ def startUp():
                 client.publish("4/gamecontrol", "{\"method\": \"status\", \"state\": \"inactive\"}", retain=True)
                 subprocess.run("vcgencmd display_power 0", shell=True)
                 os.kill(os.getppid(), signal.SIGHUP)
-                sys.exit()            
-
+                sys.exit()
+            #skip the puzzle
+            elif (codeCorrect == True or skip == True):  
+                if skip == True:
+                    bootup = 0
+                    codeCorrect = True          
+                client.publish("4/gamecontrol", "{\"method\": \"status\", \"state\": \"solved\"}", retain=True)
+                client.publish("game/puzzle4", "Solved", retain=True)
+                client.publish("puzzle4/esp/timer", "solved")
+                client.publish("2/textToSpeech", "{\"method\": \"message\", \"data\": \"Code is correct\"}")
+                time.sleep(5)
+                client.publish("puzzle4/esp/timer/button", "off")
+                client.publish("puzzle4/esp", "stop")
+                client.publish("2/textToSpeech", "{\"method\": \"message\", \"data\": \"Server is starting up.\"}")
+                #display progressbar
+                for i in range(0, 16):
+                    if (i == 5 or i == 6):
+                        time.sleep(2)
+                    elif (i == 5 or i == 6):
+                        time.sleep(0.3)
+                    if (i == 9 or i == 10):
+                        time.sleep(1)
+                    elif (i == 14):
+                        time.sleep(3)
+                    else:
+                        time.sleep(0.5)
+                    updatePictures = True 
+                client.publish("2/textToSpeech", "{\"method\": \"message\", \"data\": \"Server is running. Congratulations!\"}")                 
+                time.sleep(5)
+                client.publish("4/gamecontrol", "{\"method\": \"status\", \"state\": \"inactive\"}", retain=True)
+                subprocess.run("vcgencmd display_power 0", shell=True)
+                os.kill(os.getppid(), signal.SIGHUP)
+                sys.exit()
         updatePictures = True
         client.publish("2/textToSpeech", "{\"method\": \"message\", \"data\": \"Safety measure: Keep pressing the button during bootup.\"}")
         time.sleep(5)
@@ -436,7 +476,10 @@ if __name__ == "__main__":
     if (len(sys.argv) == 0):
         players = 3
     else:
-        players = int(sys.argv[1])
+        if (int(sys.argv[1]) == 0):
+            skip = True
+        else:
+            players = int(sys.argv[1])
     print("Player count is set to {}".format(players))
     #starts the MQTT connection
     client = mqtt.Client("puzzle4")
