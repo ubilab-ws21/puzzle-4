@@ -10,9 +10,9 @@
  * puzzle4/esp/timer [error, restart, solved] - error:   timer is either over or the entered passwort is wrong
  *                                            - restart: timer gets restarted again
  *                                            - solved:  puzzle is solved and the timer stops
- * puzzle4/esp/timer/players [int] - set the number of players to influence puzzle timer 2  -> 3:00
- *                                                                                       3  -> 2:30
- *                                                                                       4+ -> 2:00
+ * puzzle4/esp/timer/players [int] - set the number of players to influence puzzle timer 2  -> 1:07
+ *                                                                                       3  -> 0:57
+ *                                                                                       4+ -> 0:47
  * puzzle4/esp/timer/button [on, off] - sets button state                                                                                    
  */
  
@@ -50,14 +50,15 @@ TM1637 tm1637(CLK,DIO);
 #define BUTTON 19
 
 // timer variables
-int timer2 = 106;  // timer for 2 players
-int timer3 = 057;  // timer for 3 players
-int timer4 = 047;  // timer for 4+ players
+int timer2[] = {1, 0, 7};  //timer for 2  players 1:07 min
+int timer3[] = {0, 5, 7};  //timer for 3  players 0:57 min
+int timer4[] = {0, 4, 7};  //timer for 4+ players 0:47 min
 
-int timer = 057;  // default to 2:30 min
-int position_minute = (timer/100U) % 10;
-int high_position_second = (timer/10U) % 10;
-int low_position_second = (timer/1U) % 10;
+
+int timer[] = {0, 5, 7};  // default to 0:57 min
+int position_minute = timer[0];
+int high_position_second = timer[1];
+int low_position_second = timer[2];
 
 // timestep variables
 int myTime = 0;
@@ -268,9 +269,9 @@ void analyzeMQTTMessage(char* topic, char* msg) {
     blinks = false;
     puzzle_solved = false;
     reset = false;
-    position_minute = (timer/100U) % 10;
-    high_position_second = (timer/10U) % 10;
-    low_position_second = (timer/1U) % 10;
+    position_minute = timer[0];
+    high_position_second = timer[1];
+    low_position_second = timer[2];
   }
 
   // check for end-message
@@ -280,34 +281,40 @@ void analyzeMQTTMessage(char* topic, char* msg) {
     mqttStart = false;
     blinks = false;
     puzzle_solved = false;
-    position_minute = (timer/100U) % 10;
-    high_position_second = (timer/10U) % 10;
-    low_position_second = (timer/1U) % 10;
+    position_minute = timer[0];
+    high_position_second = timer[1];
+    low_position_second = timer[2];
   }
 
   // check for number of players to choose the time for the puzzle
   if(strcmp(topic, "puzzle4/esp/timer/players") == 0) {
     sscanf(msg, "%d", &number_of_players);
-    // 1-2 players: puzzle time = 3:00
+    // 1-2 players: puzzle time = 1:07
     if (number_of_players < 3) {
-      timer = timer2;
-      position_minute = (timer/100U) % 10;
-      high_position_second = (timer/10U) % 10;
-      low_position_second = (timer/1U) % 10;      
+      timer[0] = 1;
+      timer[1] = 0;
+      timer[2] = 7;
+      position_minute = timer[0];
+      high_position_second = timer[1];
+      low_position_second = timer[2];     
     }
-    // 3 players: puzzle time = 2:30
+    // 3 players: puzzle time = 0:57
     if (number_of_players == 3) {
-      timer = timer3;
-      position_minute = (timer/100U) % 10;
-      high_position_second = (timer/10U) % 10;
-      low_position_second = (timer/1U) % 10;      
+      timer[0] = 0;
+      timer[1] = 5;
+      timer[2] = 7;
+      position_minute = timer[0];
+      high_position_second = timer[1];
+      low_position_second = timer[2];    
     }
-    // 4+ players: puzzle time = 2:00
+    // 4+ players: puzzle time = 0:47
     if (number_of_players > 3) {
-      timer = timer4;
-      position_minute = (timer/100U) % 10;
-      high_position_second = (timer/10U) % 10;
-      low_position_second = (timer/1U) % 10;      
+      timer[0] = 0;
+      timer[1] = 4;
+      timer[2] = 7;
+      position_minute = timer[0];
+      high_position_second = timer[1];
+      low_position_second = timer[2];      
     }
   }
 
@@ -320,15 +327,17 @@ void analyzeMQTTMessage(char* topic, char* msg) {
   if(strcmp(topic, "puzzle4/esp/timer") == 0 and strcmp(msg, "restart") == 0) {
     reset = false;
     blinks = false;
-    position_minute = (timer/100U) % 10;
-    high_position_second = (timer/10U) % 10;
-    low_position_second = (timer/1U) % 10; 
+    position_minute = timer[0];
+    high_position_second = timer[1];
+    low_position_second = timer[2];
   }
 
   // check for solved
   if(strcmp(topic, "puzzle4/esp/timer") == 0 and strcmp(msg, "solved") == 0) {
     puzzle_solved = true;
-    timer = 230;
+    timer[0] = 0;
+    timer[1] = 5;
+    timer[2] = 7;
     Serial.println("Puzzle solved!!");
   }
 
