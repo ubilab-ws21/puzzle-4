@@ -97,7 +97,7 @@ def init_mqtt():
     client.subscribe("op/gameOptions")
 
     client.publish("4/gamecontrol", "{\"method\": \"status\", \"state\": \"active\"}", retain=True)
-       
+    client.publish("game/puzzle4", "Activated", retain=True)
 
     client.loop_start()
 
@@ -289,6 +289,7 @@ def timerThread():
                 elif codeCorrect == True:
                     #notify the timer that the puzzle is solved
                     client.publish("4/gamecontrol", "{\"method\": \"status\", \"state\": \"solved\"}", retain=True)
+                    client.publish("game/puzzle4", "Solved", retain=True)
                     client.publish("puzzle4/esp/timer", "solved")
                     client.publish("2/textToSpeech", "{\"method\": \"message\", \"data\": \"Code is correct\"}")
                     time.sleep(5)
@@ -365,7 +366,7 @@ def startUp():
     global reset
     global timeOver
 
-    time.sleep(1)
+    #time.sleep(1)
 
     #reset stopTimer variable 
     stopTimer = False
@@ -396,7 +397,7 @@ def startUp():
                 sys.exit()            
 
         updatePictures = True
-        client.publish("2/textToSpeech", "{\"method\": \"message\", \"data\": \"Safety meassure: Keep pressing the button during bootup.\"}")
+        client.publish("2/textToSpeech", "{\"method\": \"message\", \"data\": \"Safety measure: Keep pressing the button during bootup.\"}")
         time.sleep(5)
         
         updatePictures = True
