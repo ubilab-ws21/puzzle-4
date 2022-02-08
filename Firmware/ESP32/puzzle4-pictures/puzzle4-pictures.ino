@@ -21,8 +21,8 @@
 #define networkCapabilities
 
 // Wifi Credentials
-#define SSID "ubilab_wifi"
-#define PWD "ohg4xah3oufohreiPe7e"
+#define SSID "ubilab_wifi" //ubilab_wifi
+#define PWD "ohg4xah3oufohreiPe7e" //ohg4xah3oufohreiPe7e
 
 //MQTT Credentials
 #define MQTT_SERVER_IP "10.8.166.20"
@@ -30,7 +30,7 @@
 #define MAX_MSG 50
 char msg[MAX_MSG] = {'\0'};
 
-#define NAME "Puzzle4-ESP1"     //Name of ESP
+#define NAME "Puzzle4-ESP0"     //Name of ESP: Puzzle4-ESP0/1/2/3
 #define OTA_PWD "pictures"      // OTA Password
 
 //pin definition for TM1637
@@ -45,19 +45,21 @@ TM1637 tm1637(CLK,DIO);
 #define BUTTON_2 5
 
 bool mqttStart = false;
-int sequenceIndex = 3;
-int esp = 0;
+int sequenceIndex = 0; 
+int esp = 0; // ESP0 -> 0, ESP1 -> 1, ESP2 -> 2, ESP3 -> 3, 
 
-int sequence[4][4][2] = {{{9, 3}, {4, 7}, {2, 1}, {6, 8}},
+int count = 0;
+
+int sequence[10][4][2] = {{{9, 3}, {4, 7}, {2, 1}, {6, 8}},
                   {{3, 1}, {2, 9}, {3, 5}, {2, 7}},
                   {{2, 6}, {4, 3}, {7, 4}, {1, 2}},
-                  {{6, 1}, {5, 9}, {2, 4}, {3, 7}};
-                  {{1, 3}, {8, 8}, {5, 9}, {6, 2}};
-                  {{5, 1}, {2, 7}, {1, 4}, {8, 9}};
-                  {{3, 4}, {6, 2}, {1, 8}, {9, 3}};
-                  {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
-                  {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
-                  {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}}};
+                  {{6, 1}, {5, 9}, {2, 4}, {3, 7}},
+                  {{1, 3}, {8, 8}, {5, 9}, {6, 2}},
+                  {{5, 1}, {2, 7}, {1, 4}, {8, 9}},
+                  {{3, 4}, {6, 2}, {1, 8}, {9, 3}},
+                  {{7, 1}, {3, 4}, {2, 8}, {6, 7}},
+                  {{3, 7}, {4, 5}, {0, 7}, {8, 1}},
+                  {{7, 0}, {1, 4}, {5, 8}, {6, 5}}};
 
 WiFiClient mqttClient;
 PubSubClient mqtt(mqttClient);
@@ -143,45 +145,46 @@ void loop() {
     mqtt.loop();
     
     while(!mqttStart){
-      Serial.println("Waiting for start signal over MQTT");
+      //Serial.println("Waiting for start signal over MQTT");
       mqtt.loop();
-      delay(1000);
     }
   #endif
 
   //handle Button 1
   if(digitalRead(BUTTON_1) == 0) {
     //left
-    //Serial.println(sequence[esp][sequenceIndex][0]);
-    Serial.println(sequenceIndex);
-    tm1637.display(0, sequence[esp][sequenceIndex][0]);
+    tm1637.display(0, sequence[sequenceIndex][esp][0]);
     segmentState[0] = 1;
   } else if (segmentState[0] == 1) {
     segmentState[0] = 0;
     tm1637.clearDisplay();
     if (segmentState[1] == 1) {
       //right
-      tm1637.display(3, sequence[esp][sequenceIndex][1]);
+      tm1637.display(3, sequence[sequenceIndex][esp][1]);
     }
   }
 
   //handle Button 2
   if(digitalRead(BUTTON_2) == 0) {
     //right
-    tm1637.display(3, sequence[esp][sequenceIndex][1]);
+    tm1637.display(3, sequence[sequenceIndex][esp][1]);
     segmentState[1] = 1;
   } else if (segmentState[1] == 1) {
     segmentState[1] = 0;
     tm1637.clearDisplay();
     if (segmentState[0] == 1) {
       //left
-      tm1637.display(0, sequence[esp][sequenceIndex][0]);
+      tm1637.display(0, sequence[sequenceIndex][esp][0]);
     }
   }
 
   delay(10);
-  
 
+  if (!mqtt.connected()){
+    Serial.println("Client disconnected!");
+    reconnect();
+    mqtt.loop();
+  }
 }
 
 // MQTT Callback function
@@ -223,4 +226,15 @@ void setLED(bool state) {
     digitalWrite(LED_1, LOW);
     digitalWrite(LED_2, LOW);
   }
+}
+
+void reconnect() { 
+  while (!mqtt.connected()) {  
+    if (mqtt.connect(NAME)) { 
+      Serial.println("MQTT connected");        
+      mqtt.setCallback(mqttCallback);
+      mqtt.subscribe("puzzle4/esp");
+      mqtt.subscribe("puzzle4/esp/sequence");  
+    } 
+  }    
 }

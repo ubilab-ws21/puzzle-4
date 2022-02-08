@@ -10,9 +10,10 @@
  * puzzle4/esp/timer [error, restart, solved] - error:   timer is either over or the entered passwort is wrong
  *                                            - restart: timer gets restarted again
  *                                            - solved:  puzzle is solved and the timer stops
- * puzzle4/esp/timer/players [int] - set the number of players to influence puzzle timer 2  -> 3:00
- *                                                                                       3  -> 2:30
- *                                                                                       4+ -> 2:00
+ * puzzle4/esp/timer/players [int] - set the number of players to influence puzzle timer 2  -> 1:07
+ *                                                                                       3  -> 0:57
+ *                                                                                       4+ -> 0:47
+ * puzzle4/esp/timer/button [on, off] - sets button state                                                                                    
  */
  
 #include <WiFi.h>
@@ -44,15 +45,20 @@ char msg[MAX_MSG] = {'\0'};
 #define DIO 23  // data
 TM1637 tm1637(CLK,DIO);
 
-// timer variables
-int timer2 = 300;  // timer for 2 players
-int timer3 = 230;  // timer for 3 players
-int timer4 = 200;  // timer for 4+ players
+//pins for arcade button
+#define LED 13
+#define BUTTON 19
 
-int timer = 230;  // default to 2:30 min
-int position_minute = (timer/100U) % 10;
-int high_position_second = (timer/10U) % 10;
-int low_position_second = (timer/1U) % 10;
+// timer variables
+int timer2[] = {1, 0, 7};  //timer for 2  players 1:07 min
+int timer3[] = {0, 5, 7};  //timer for 3  players 0:57 min
+int timer4[] = {0, 4, 7};  //timer for 4+ players 0:47 min
+
+
+int timer[] = {0, 5, 7};  // default to 0:57 min
+int position_minute = timer[0];
+int high_position_second = timer[1];
+int low_position_second = timer[2];
 
 // timestep variables
 int myTime = 0;
@@ -63,6 +69,8 @@ bool reset = false;
 bool blinks = false;
 bool mqttStart = false;
 bool puzzle_solved = false;
+bool button_light = false;
+bool button_press = false;
 int number_of_players = 0;
 
 WiFiClient mqttClient;
@@ -104,6 +112,7 @@ void setup() {
     mqtt.subscribe("puzzle4/esp");
     mqtt.subscribe("puzzle4/esp/timer");
     mqtt.subscribe("puzzle4/esp/timer/players");
+    mqtt.subscribe("puzzle4/esp/timer/button");
 
     // Arduino OTA
     ArduinoOTA.setHostname(NAME);
@@ -126,6 +135,10 @@ void setup() {
   tm1637.set(4);  // Bright-level from 0 to 7
 
   tm1637.clearDisplay();
+
+  //button and button light
+  pinMode(LED, OUTPUT);
+  pinMode(BUTTON, INPUT_PULLUP);
   
 }
 
@@ -134,13 +147,51 @@ void loop() {
     ArduinoOTA.handle();
   
     mqtt.loop();
-    
+
     while(!mqttStart){
-      Serial.println("Waiting for start signal over MQTT");
+      //allow changing button light before start mqtt message
+      if (button_light == true) {
+        digitalWrite(LED, HIGH);
+      } else if (button_light == false) {
+        digitalWrite(LED, LOW);
+      }
+
+      //check button state before start mqtt message
+      if (digitalRead(BUTTON) == 0) {
+        if (button_press == false) {
+          button_press = true;
+          mqtt.publish("puzzle4/button", "true");
+        }
+      } else {
+        if (button_press == true) {
+          button_press = false;
+          mqtt.publish("puzzle4/button", "false");
+        }
+      }
+      //Serial.println("Waiting for start signal over MQTT");
       mqtt.loop();
-      delay(1000);
     }
   #endif
+
+  //light up button when mqtt message arrives
+  if (button_light == true) {
+    digitalWrite(LED, HIGH);
+  } else if (button_light == false) {
+    digitalWrite(LED, LOW);
+  }
+
+  //check for button state
+  if (digitalRead(BUTTON) == 0) {
+    if (button_press == false) {
+      button_press = true;
+      mqtt.publish("puzzle4/button", "true");
+    }
+  } else {
+    if (button_press == true) {
+      button_press = false;
+      mqtt.publish("puzzle4/button", "false");
+    }
+  }
 
   if (!reset and !puzzle_solved) {
     // enter every second if reset is false
@@ -191,6 +242,12 @@ void loop() {
     tm1637.display(3, low_position_second);
     tm1637.point(true);
   }
+
+  if (!mqtt.connected()){
+    Serial.println("Client disconnected!");
+    reconnect();
+    mqtt.loop();
+  }
 }
 
 // MQTT Callback function
@@ -211,6 +268,10 @@ void analyzeMQTTMessage(char* topic, char* msg) {
     mqttStart = true;
     blinks = false;
     puzzle_solved = false;
+    reset = false;
+    position_minute = timer[0];
+    high_position_second = timer[1];
+    low_position_second = timer[2];
   }
 
   // check for end-message
@@ -220,34 +281,40 @@ void analyzeMQTTMessage(char* topic, char* msg) {
     mqttStart = false;
     blinks = false;
     puzzle_solved = false;
-    position_minute = (timer/100U) % 10;
-    high_position_second = (timer/10U) % 10;
-    low_position_second = (timer/1U) % 10;
+    position_minute = timer[0];
+    high_position_second = timer[1];
+    low_position_second = timer[2];
   }
 
   // check for number of players to choose the time for the puzzle
   if(strcmp(topic, "puzzle4/esp/timer/players") == 0) {
     sscanf(msg, "%d", &number_of_players);
-    // 1-2 players: puzzle time = 3:00
+    // 1-2 players: puzzle time = 1:07
     if (number_of_players < 3) {
-      timer = timer2;
-      position_minute = (timer/100U) % 10;
-      high_position_second = (timer/10U) % 10;
-      low_position_second = (timer/1U) % 10;      
+      timer[0] = 1;
+      timer[1] = 0;
+      timer[2] = 7;
+      position_minute = timer[0];
+      high_position_second = timer[1];
+      low_position_second = timer[2];     
     }
-    // 3 players: puzzle time = 2:30
+    // 3 players: puzzle time = 0:57
     if (number_of_players == 3) {
-      timer = timer3;
-      position_minute = (timer/100U) % 10;
-      high_position_second = (timer/10U) % 10;
-      low_position_second = (timer/1U) % 10;      
+      timer[0] = 0;
+      timer[1] = 5;
+      timer[2] = 7;
+      position_minute = timer[0];
+      high_position_second = timer[1];
+      low_position_second = timer[2];    
     }
-    // 4+ players: puzzle time = 2:00
+    // 4+ players: puzzle time = 0:47
     if (number_of_players > 3) {
-      timer = timer4;
-      position_minute = (timer/100U) % 10;
-      high_position_second = (timer/10U) % 10;
-      low_position_second = (timer/1U) % 10;      
+      timer[0] = 0;
+      timer[1] = 4;
+      timer[2] = 7;
+      position_minute = timer[0];
+      high_position_second = timer[1];
+      low_position_second = timer[2];      
     }
   }
 
@@ -260,15 +327,39 @@ void analyzeMQTTMessage(char* topic, char* msg) {
   if(strcmp(topic, "puzzle4/esp/timer") == 0 and strcmp(msg, "restart") == 0) {
     reset = false;
     blinks = false;
-    position_minute = (timer/100U) % 10;
-    high_position_second = (timer/10U) % 10;
-    low_position_second = (timer/1U) % 10; 
+    position_minute = timer[0];
+    high_position_second = timer[1];
+    low_position_second = timer[2];
   }
 
   // check for solved
   if(strcmp(topic, "puzzle4/esp/timer") == 0 and strcmp(msg, "solved") == 0) {
     puzzle_solved = true;
-    timer = 230;
+    timer[0] = 0;
+    timer[1] = 5;
+    timer[2] = 7;
     Serial.println("Puzzle solved!!");
   }
+
+  //check if button should be turned on
+  if(strcmp(topic, "puzzle4/esp/timer/button") == 0 and strcmp(msg, "on") == 0) {
+    button_light = true;
+    Serial.println("Button light turned on");
+  }
+  
+  if(strcmp(topic, "puzzle4/esp/timer/button") == 0 and strcmp(msg, "off") == 0) {
+    button_light = false;
+    Serial.println("Button light turned off");
+  }
+}
+
+void reconnect() { 
+  while (!mqtt.connected()) {  
+    if (mqtt.connect(NAME)) { 
+      Serial.println("MQTT connected");        
+      mqtt.setCallback(mqttCallback);
+      mqtt.subscribe("puzzle4/esp");
+      mqtt.subscribe("puzzle4/esp/sequence");  
+    } 
+  }    
 }

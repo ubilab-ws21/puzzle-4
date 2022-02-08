@@ -4,11 +4,11 @@ The Firmware folder contains all the Software code used for this project.
 In the Sequences folder are the created sequences as .mp4 and .pdf and also a solution file.
 The Hardware folder contains most of the manuals and guides for the used hardware parts in our riddle for example the pin-assignment for the ESP32.
 
-## Content#
+## Content #
 * [Puzzle in Storyline](#1)
 * [How the puzzle works](#2)
-* [Hardware](#3)
-* [MQTT Documentation](#4)
+* [MQTT Documentation](#3)
+* [Hardware](#4)
 * [Project Timeline](#5)
 
 
@@ -48,6 +48,9 @@ Erklärung dass nur der Raspi mit außen kommuniziert und der Rest intern bleibt
 XXDiagramm mit den verschiedenen topics für die verschiedenen ObjekteXX
 Erklärung wofür welches Topic und was für Nachrichten in diesem.
 
+Hier kommt das übersichtsbild rein und ein verweis auf den MQTT Ordner in dem dann die Tabelle und die Struktur sind.
+[MQTT overview](https://github.com/ubilab-ws21/puzzle-4/tree/main/MQTT "MQTT overview")
+
 ## Hardware <a name="4"></a>
 All documents and manuals needed to reconstruct this puzzle are in the "Hardware" folder.
 XXFoto von zusammengelötetem Aufbau mit offener caseXX
@@ -70,10 +73,15 @@ XXFoto von zusammengelötetem Aufbau mit offener caseXX
 - [x] Testing the network communication between the systems in the escape room
 - [x] Assembly of the missing parts
 - [x] Designing the final sequences for the riddle
-- [ ] ...
-- [ ] Printing and foil-coating the pictures
-- [ ] Mount all parts in the room
+- [x] Printing and foil-coating the pictures
+- [x] Mount all parts in the room
+- [x] Added progress bar after finishing the riddle
+- [x] Implement extra button as dead-man switch
+- [x] Fixed issues after integration run
+- [x] Make use of AR hint system
+- [ ] Coordinate MQTT with operator
 - [ ] Provide power supply for all of them
 - [ ] Last testing and bug fixing
+- [ ] Finish documentation
 - [ ] Final run and presentation
 
