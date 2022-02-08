@@ -146,6 +146,12 @@ void loop() {
     
     while(!mqttStart){
       //Serial.println("Waiting for start signal over MQTT");
+      //wait for MQTT reconnect if signal is lost
+      if (!mqtt.connected()){
+        Serial.println("Client disconnected!");
+        reconnect();
+        mqtt.loop();
+      }
       mqtt.loop();
     }
   #endif

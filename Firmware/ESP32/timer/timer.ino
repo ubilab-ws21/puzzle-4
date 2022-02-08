@@ -168,6 +168,12 @@ void loop() {
           mqtt.publish("puzzle4/button", "false");
         }
       }
+      //wait for MQTT reconnect if signal is lost
+      if (!mqtt.connected()){
+        Serial.println("Client disconnected!");
+        reconnect();
+        mqtt.loop();
+      }
       //Serial.println("Waiting for start signal over MQTT");
       mqtt.loop();
     }
