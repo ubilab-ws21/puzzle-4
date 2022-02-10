@@ -1,7 +1,7 @@
 ### MQTT topics
 | Topic | Description | Subscriber | Publisher |
 | :--:	| :---------: | :--------: | :--------:|
-| 4/gamecontrol | xx | operator, Raspi | operator, Raspi |
+| 4/gamecontrol | general communication | operator, Raspi | operator, Raspi |
 | op/gamecontrol | for the player amount | Raspi | operator |
 | puzzle4/esp | messages for all 5 ESPs | ESP1-4 + Timer | Raspi |
 | puzzle4/esp/timer | messages for Timer ESP | Timer ESP | Raspi |
