@@ -28,7 +28,7 @@ The puzzle starts by showing a video sequence of picture cutouts included in a m
 After showing the four equations the sequence restarts as long as a predefined time. Afterwards there will be a completely new sequence with other cutouts in other mathematical equations. Such a equation with a given cutout can be seen in the following picture:
 <img src="https://github.com/ubilab-ws21/puzzle-4/blob/main/Firmware/Raspberry/sequences/0_0.jpg">
 When seeing this on the server display the players should recognize this picture cutout from the rooms they played in before. Because in the entrance room and the lab room are many warning signs at the walls. An overview of all the warning signs can be seen in the next picture:
-<img src="https://github.com/ubilab-ws21/puzzle-4/blob/main/Firmware/Raspberry/sequences/0_0.jpg">
+<img src="https://github.com/ubilab-ws21/puzzle-4/blob/main/Sequences/warning-signs.svg">
 We placed them in pairs of two pictures at different walls in different rooms so the players have to use the whole space. Additionally we force the group to communicate with each other and benefit teamwork.
 Under each picture will be a seven segment display and a button. The display only shows a number when the related button is pressed. To stop one person to stand in the middle of the room and look at the numbers under each picture.
 XXHier Foto von fertigem AufbauXXX
