@@ -26,7 +26,7 @@ Accordingly the Escape Room is solved.
 ## How the puzzle works<a name="2"></a>
 The puzzle starts by showing a video sequence of picture cutouts included in a mathematical equation. Simultanously there starts a text-to-speach which says that the server is locked and a password needs to be entered. The players need to find the corresponding picture from the cutout and take the number below into the equation to get one digit of the solution. There is a total of four equations with cutouts and therefore consists the solution of four digits.
 After showing the four equations the sequence restarts as long as a predefined time. Afterwards there will be a completely new sequence with other cutouts in other mathematical equations. Such a equation with a given cutout can be seen in the following picture:
-<img src="https://github.com/ubilab-ws21/puzzle-4/blob/main/Sequences/demo-sequence.PNG">
+<img src="https://github.com/ubilab-ws21/puzzle-4/blob/main/Firmware/Raspberry/sequences/0_0.jpg">
 When seeing this on the server display the players should recognize this picture cutout from the rooms they played in before. Because in the entrance room and the lab room are many warning signs at the walls. An overview of all the warning signs can be seen in the next picture:
 <img src="https://github.com/ubilab-ws21/puzzle-4/blob/main/Firmware/Raspberry/sequences/0_0.jpg">
 We placed them in pairs of two pictures at different walls in different rooms so the players have to use the whole space. Additionally we force the group to communicate with each other and benefit teamwork.
