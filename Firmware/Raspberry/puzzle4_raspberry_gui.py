@@ -68,16 +68,28 @@ def on_message(client, userdata, msg): #function is automatically activated when
         msg_json = json.loads(msg.payload)
         if(msg_json["method"] == "trigger"):
             if(msg_json["state"] == "off"):
-                print("Time is over")
-                stopTimer = True
-                timeOver = True
-                bootup = 0
-                updatePictures = True
-            elif(msg_json["state"] == "skip"):
-                stopTimer = True
-                codeCorrect = True
-                bootup = 0
-                updatePictures = True
+                if "data" in msg_json:
+                    #skips the puzzle but still starts progress bar
+                    if msg_json["data"] == "skipped":
+                        stopTimer = True
+                        codeCorrect = True
+                        bootup = 0
+                        updatePictures = True 
+                    #stops the puzzle
+                    else:                       
+                        print("Time is over")
+                        stopTimer = True
+                        timeOver = True
+                        bootup = 0
+                        updatePictures = True
+                #stops puzzle
+                else:
+                    print("Time is over")
+                    stopTimer = True
+                    timeOver = True
+                    bootup = 0
+                    updatePictures = True
+                
     if (msg.topic == "puzzle4/button"):
         msg.payload = msg.payload.decode("utf-8")
         if(str(msg.payload) == "true"):

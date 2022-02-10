@@ -35,11 +35,13 @@ def on_message(client, userdata, msg): #function is automatically activated when
                 players_copy = players
                 players = 3
                 subprocess.call(["terminator", "--command=python3 puzzle4_raspberry_gui.py {}".format(players_copy)], cwd="/home/pi/escape_room", stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            elif(msg_json["state"] == "skip"):
-                #start the Picture Puzzle 
-                print("Received skip message for the picture puzzle")
-                players_copy = 0
-                subprocess.call(["terminator", "--command=python3 puzzle4_raspberry_gui.py {}".format(players_copy)], cwd="/home/pi/escape_room", stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            elif(msg_json["state"] == "off"):
+                if "data" in msg_json:
+                    if msg_json["data"] == "skipped":
+                        #start the Picture Puzzle 
+                        print("Received skip message for the picture puzzle")
+                        players_copy = 0
+                        subprocess.call(["terminator", "--command=python3 puzzle4_raspberry_gui.py {}".format(players_copy)], cwd="/home/pi/escape_room", stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
     #check if player count is being adjusted
     if (msg.topic == "op/gameOptions"):
