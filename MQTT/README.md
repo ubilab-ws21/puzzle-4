@@ -25,7 +25,6 @@ The following messages are sent by the Raspi in "4/gamecontrol" to report the cu
 | status | inactive |      |   | The Raspi has finished it's initialization and waits for a 'trigger on'.            |
 | status | active   |      |   | The Raspi has received a 'trigger on' message and starts the puzzle.                |
 | status | solved   |      |   | The picture puzzle is solved and waits for a 'trigger off'. |
-| status  | active |       |   |  The picture puzzle is solved. |
 
 ### Chart of our MQTT communication
 <img src="https://github.com/ubilab-ws21/puzzle-4/blob/main/MQTT/mqtt.svg">
