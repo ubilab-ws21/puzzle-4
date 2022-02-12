@@ -42,7 +42,7 @@ After some time has passed and the puzzle is not solved or the players enter a w
 Therefore all numbers are saved in an array. 
 
 The following flow chart shows the overall course of events of our puzzle.
-<img src="https://github.com/ubilab-ws21/puzzle-4/blob/main/Sequences/puzzle-ablaufplan.png" height="500">
+<img src="https://github.com/ubilab-ws21/puzzle-4/blob/main/Sequences/puzzle-ablaufplan.png">
 
 ## MQTT Documentation <a name="3"></a>
 In our communication design we distinguish between internal and external communication. The Raspi does everything external with the operator and hint system. The Raspi is sending and receiving informations from and to the individual ESPs. So all ESPs communicate internally with each other. A better overview for our MQTT communication and structure can be seen in the MQTT folder. There are also tables with the used topics and messages. 
