@@ -36,25 +36,22 @@ Under each picture will be a seven segment display and a button. The display onl
 By finding the four pictures and the resulting four numbers and putting them in the equations the group should get a four digit code which they need to type in the server with a given numpad.
 Overall does every picture pair consists of one ESP32, two buttons and four seven segment displays. The server consists of the numpad, Raspberry Pi and a display. Additionally there is an ESP32 with a seven-segment-display which represents the timer and a red button. The numpad, timer and red button can be seen in the next picture:
 <img src="https://github.com/ubilab-ws21/puzzle-4/blob/main/Hardware/server.jpeg">
-All the ESP32 and the Raspberry Pi communicate via MQTT.
-At the beginning the Raspberry Pi is waiting for the start message from the operator. When receiving this message the Raspi will send the starting sequence to the ESPs and starts with the first sequence. The ESP32 will power the buttons so they will light up and show the corresponding first number on the seven segment display when pressed. 
-After some time has passed and the puzzle is not solved or the players enter a wrong code the Raspberry Pi sends a MQTT message at the enviroment group to play a text to speech: "new sequence". So the players know that sequence has changed. Also the ESP32 receive a MQTT message from the Raspi that they need to change the numbers, a new sequence is shown on the display and the timer restarts. 
+All the ESP32 and the Raspberry Pi communicate via MQTT. Further MQTT informations can be found in the [MQTT Documentation](#3) or the [MQTT overview](https://github.com/ubilab-ws21/puzzle-4/tree/main/MQTT "MQTT overview").
+At the beginning the Raspberry Pi is sending a retained message to the operator and AR hint system. After that it is waiting for the start message from the operator. When receiving this message the Raspi will send the starting sequence to the ESPs and starts with the first sequence. The ESP32 will power the buttons so they will light up and show the corresponding first number on the seven segment display when pressed. 
+After some time has passed and the puzzle is not solved or the players enter a wrong code or the red button on the server dropped the Raspberry Pi sends a MQTT message at the text to speech to play a text to speech: "new sequence". So the players know that sequence has changed. Also the ESP32 receive a MQTT message from the Raspi that they need to change the numbers, a new sequence is shown on the display and the timer restarts. 
 Therefore all numbers are saved in an array. 
 
 The following flow chart shows the overall course of events of our puzzle.
 <img src="https://github.com/ubilab-ws21/puzzle-4/blob/main/Sequences/puzzle-ablaufplan.png">
 
 ## MQTT Documentation <a name="3"></a>
-Erklärung dass nur der Raspi mit außen kommuniziert und der Rest intern bleibt.
-XXDiagramm mit den verschiedenen topics für die verschiedenen ObjekteXX
-Erklärung wofür welches Topic und was für Nachrichten in diesem.
-
-Hier kommt das übersichtsbild rein und ein verweis auf den MQTT Ordner in dem dann die Tabelle und die Struktur sind.
+In our communication design we distinguish between internal and external communication. The Raspi does everything external with the operator and hint system. The Raspi is sending and receiving informations from and to the individual ESPs. So all ESPs communicate internally with each other. A better overview for our MQTT communication and structure can be seen in the MQTT folder. There are also tables with the used topics and messages. 
 [MQTT overview](https://github.com/ubilab-ws21/puzzle-4/tree/main/MQTT "MQTT overview")
 
 ## Hardware <a name="4"></a>
 All documents and manuals needed to reconstruct this puzzle are in the "Hardware" folder.
-XXFoto von zusammengelötetem Aufbau mit offener caseXX
+The following picture gives on overview how the used hardware inside of the created case looks like:
+<img src="https://github.com/ubilab-ws21/puzzle-4/blob/main/Hardware/open_case.jpeg">
 
 
 ## Project Timeline <a name="5"></a>
@@ -80,9 +77,11 @@ XXFoto von zusammengelötetem Aufbau mit offener caseXX
 - [x] Implement extra button as dead-man switch
 - [x] Fixed issues after integration run
 - [x] Make use of AR hint system
-- [ ] Coordinate MQTT with operator
-- [ ] Provide power supply for all of them
-- [ ] Last testing and bug fixing
-- [ ] Finish documentation
-- [ ] Final run and presentation
+- [x] Coordinate MQTT with operator
+- [x] Provide power supply for all of them
+- [x] Last testing and bug fixing
+- [x] Finish documentation
+- [x] Final run
+- [x] very last bug fixes
+- [x] Final run 2.0
 
