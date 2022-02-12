@@ -17,21 +17,21 @@ The players face a horrible situation because a solar storm happens while they v
 So the group needs to get access to the lab and server room and reboot the server with the control-software. In this way they can save our city by starting the electricity. 
 
 Our picture puzzle starts after the team got acces to the lab and server room and solved the knock knock riddle to activate the server. So the server is working now but still secured by a code. To solve this puzzle the group needs to work as a team and under time pressure.
-To stop unauthorized access the code can only be solved by people who work in the lab and know the enviroment. Another security mechanism is the need of more than one person similar to the two-man-mechanism from nuclear codes. The group needs to walk around and communicate with each other to solve it in time. 
-After finding the solution and tiping it into the server, they get acces and are allowed to upload the control-software. 
+To stop unauthorized access the code can only be solved by people who work in the lab and know the enviroment. Another security mechanism is the need of more than one person similar to the two-man-mechanism from nuclear codes. One person always needs to stand at the server and press a button there while the others can walk freely in the room. The group needs to walk around and communicate with each other to solve it in time. 
+After finding the solution and typing it into the server, they get access and the server reboots which results in saving our world. 
 
 Accordingly the Escape Room is solved. 
   
 
 ## How the puzzle works<a name="2"></a>
-The puzzle starts by showing a video sequence of picture cutouts included in a mathematical equation. Simultanously there starts a text-to-speach which says that the server is locked and a password needs to be entered. The players need to find the corresponding picture from the cutout and take the number below into the equation to get one digit of the solution. There is a total of four equations with cutouts and therefore consists the solution of four digits.
-After showing the four equations the sequence restarts as long as a predefined time. Afterwards there will be a completely new sequence with other cutouts in other mathematical equations. Such a equation with a given cutout can be seen in the following picture:
+The puzzle starts by showing a text that the red button on the server needs to be pressed the whole time. After that a video sequence of picture cutouts included in a mathematical equation is shown. Simultanously there starts a text-to-speach which says that the server is locked and a password needs to be entered. The players need to find the corresponding picture from the cutout and take the number below into the equation to get one digit of the solution. There is a total of four equations with cutouts and therefore consists the solution of four digits.
+After showing the four equations the sequence restarts as long as a predefined time. This predefined time depends on the amount of players. Two players get more time than four. Afterwards there will be a completely new sequence with other cutouts in other mathematical equations. Such a equation with a given cutout can be seen in the following picture:
 <img src="https://github.com/ubilab-ws21/puzzle-4/blob/main/Firmware/Raspberry/sequences/0_0.jpg">
 When seeing this on the server display the players should recognize this picture cutout from the rooms they played in before. Because in the entrance room and the lab room are many warning signs at the walls. An overview of all the warning signs can be seen in the next picture:
 <img src="https://github.com/ubilab-ws21/puzzle-4/blob/main/Sequences/warning-signs.svg">
 We placed them in pairs of two pictures at different walls in different rooms so the players have to use the whole space. Additionally we force the group to communicate with each other and benefit teamwork.
 Under each picture will be a seven segment display and a button. The display only shows a number when the related button is pressed. To stop one person to stand in the middle of the room and look at the numbers under each picture.
-XXHier Foto von fertigem AufbauXXX
+
 <img src="https://github.com/ubilab-ws21/puzzle-4/blob/main/Sequences/demo-sign.png">
 
 By finding the four pictures and the resulting four numbers and putting them in the equations the group should get a four digit code which they need to type in the server with a given numpad.
