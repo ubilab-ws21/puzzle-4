@@ -51,6 +51,7 @@ In our communication design we distinguish between internal and external communi
 ## Hardware <a name="4"></a>
 All documents and manuals needed to reconstruct this puzzle are in the "Hardware" folder.
 The following picture gives on overview how the used hardware inside of the created case looks like:
+
 <img src="https://github.com/ubilab-ws21/puzzle-4/blob/main/Hardware/open_case.jpeg" height="500">
 
 
