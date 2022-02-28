@@ -9,16 +9,31 @@ import json
 
 #variables 
 players = 3
+disconnected = True
+count = 0
+counter2 = 0
 
 #MQTT functions
 def on_connect(client, userdata, flags, rc):
+    global disconnected
+    global count
+    count = 0
+    disconnected = False
     print("Connected with result code " + str(rc))
+    client.publish("puzzle4/state", "client connected")
     if (rc==0):
         print("Connected successfully!")
     client.publish("4/gamecontrol", "{\"method\": \"status\", \"state\": \"inactive\"}", retain=True)
     client.subscribe("puzzle4/#") 
     client.subscribe("4/gamecontrol")
     client.subscribe("op/gameOptions")
+
+def on_disconnect(client, userdata, rc):
+    global disconnected
+    disconnected = True
+    if (rc!=0):
+        print("Client disconnected")
+    
 
 #checks for MQTT messages
 def on_message(client, userdata, msg): #function is automatically activated when message is received
@@ -57,6 +72,7 @@ def init_mqtt():
 
     client.on_connect = on_connect
     client.on_message = on_message
+    client.on_disconnect = on_disconnect
 
     client.connect("10.8.166.20", 1883, 60) #10.8.166.20
     client.subscribe("puzzle4/#")
@@ -69,6 +85,7 @@ def init_mqtt():
 
 def exit():
     subprocess.run("vcgencmd display_power 1", shell=True)
+    client.loop_stop()
 
 
 
@@ -77,7 +94,7 @@ if __name__ == "__main__":
     #turn on display on exit
     atexit.register(exit)
     #turn off display 
-    subprocess.run("vcgencmd display_power 0", shell=True)
+    #subprocess.run("vcgencmd display_power 0", shell=True)
     #wait for Wifi connection
     #starts the MQTT connection
     client = mqtt.Client("puzzle4_main")
@@ -86,4 +103,23 @@ if __name__ == "__main__":
 
     while(True):
         time.sleep(0.1)
+        counter2 = counter2 + 1
+        #handle reconnecting
+        if disconnected == True:
+            count = count + 1
+            #if count % 50 == 0 and count < 600:
+            #    try:
+            #        client.reconnect()
+            #    except:
+            #        print("Connection to client not possible. Will try again")
+            #if no reconnect aber 60s, restart the system
+            if count == 600:
+                print("Raspberry will restart")
+                subprocess.run("sudo reboot", shell=True)
+
+        if counter2 == 100:
+            client.publish("puzzle4/state", "client running")
+            print("client running...")
+            counter2 = 0
+
 
